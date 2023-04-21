@@ -14,7 +14,7 @@ Please use the x86_64-elf-gcc toolchain to compile on Mac. It can be installed u
 To run the program, navigate to the corresponding folder and use the following command:
 ```sh
 $ make qemu
-# 若使用工具链包含前缀，如x86_64-elf-，可以使用GCCPREFIX
+# If the toolchain has a prefix, such as x86_64-elf-, use GCCPREFIX
 $ make qemu GCCPREFIX=x86_64-elf-
 ```
 
