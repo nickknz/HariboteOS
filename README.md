@@ -27,7 +27,7 @@ $ make qemu DEBUG=1
 
 ## Project progress
 - [X] day 1：Hello world
-- [ ] day 2：assembly and Makefile
+- [X] day 2：assembly and Makefile
 - [ ] 第3天：进入32位模式
 - [ ] 第4天：画面显示
 - [ ] 第5天：GDT/IDT
