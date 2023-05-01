@@ -71,9 +71,3 @@ io_store_eflags:        ; void io_store_eflags(int eflags);
   PUSH    EAX
   POPFD
   RET
-
-; write_mem8:             ; void write_mem8(int addr, int data);
-;   MOV     ECX, [ESP+4]  ; addr
-;   MOV     AL, [ESP+8]   ; data
-;   MOV     [ECX], AL
-;   RET
