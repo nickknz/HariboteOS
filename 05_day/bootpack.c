@@ -9,7 +9,7 @@ void init_palette(void);
 void set_palette(int start, int end, unsigned char *rgb);
 void box_fill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0,
                int x1, int y1);
-void init_screen(unsigned char *vram, int xSize, int ySize);
+void init_screen(unsigned char *vram, int x, int y);
 
 #define COL8_000000 0
 #define COL8_FF0000 1
@@ -28,26 +28,30 @@ void init_screen(unsigned char *vram, int xSize, int ySize);
 #define COL8_008484 14
 #define COL8_848484 15
 
+struct BOOTINFO {
+	char cyls, leds, vmode, reserve;
+	short scrnx, scrny;
+	unsigned char *vram;
+};
+
 // 入口函数HariMain重命名为标准的main
 // 返回类型修改为int，避免编译器警告
 int main(void) {
   unsigned char *vram;
-  int xsize, ysize;
-  short *binfo_scrnx, *binfo_scrny;
-  int *binfo_vram;
-  init_palette();
-  binfo_scrnx = (short *) 0x0ff4;
-  binfo_scrny = (short *) 0x0ff6;
-  binfo_vram = (int *) 0x0ff8;
-  xsize = *binfo_scrnx;
-  ysize = *binfo_scrny;
-  vram = (unsigned char *) *binfo_vram;
+	int xsize, ysize;
+	struct BOOTINFO *binfo;
 
-  init_screen(vram, xsize, ysize);
+	init_palette();
+	binfo = (struct BOOTINFO *) 0x0ff0;
+	xsize = (*binfo).scrnx;
+	ysize = (*binfo).scrny;
+	vram = (*binfo).vram;
 
-  for (;;) {
-    io_hlt();
-  }
+	init_screen(vram, xsize, ysize);
+
+	for (;;) {
+		io_hlt();
+	}
 }
 
 void init_palette(void) {
@@ -104,25 +108,22 @@ void box_fill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0,
   return;
 }
 
-void init_screen(unsigned char *vram, int xSize, int ySize) {
-  box_fill8(vram, xSize, COL8_008484, 0, 0, xSize - 1, ySize - 29);
-  box_fill8(vram, xSize, COL8_C6C6C6, 0, ySize - 28, xSize - 1, ySize - 28);
-  box_fill8(vram, xSize, COL8_FFFFFF, 0, ySize - 27, xSize - 1, ySize - 27);
-  box_fill8(vram, xSize, COL8_C6C6C6, 0, ySize - 26, xSize - 1, ySize - 1);
+void init_screen(unsigned char *vram, int x, int y) {
+	box_fill8(vram, x, COL8_008484,  0,     0,      x -  1, y - 29);
+	box_fill8(vram, x, COL8_C6C6C6,  0,     y - 28, x -  1, y - 28);
+	box_fill8(vram, x, COL8_FFFFFF,  0,     y - 27, x -  1, y - 27);
+	box_fill8(vram, x, COL8_C6C6C6,  0,     y - 26, x -  1, y -  1);
 
-  box_fill8(vram, xSize, COL8_FFFFFF, 3, ySize - 24, 59, ySize - 24);
-  box_fill8(vram, xSize, COL8_FFFFFF, 2, ySize - 24, 2, ySize - 4);
-  box_fill8(vram, xSize, COL8_848484, 3, ySize - 4, 59, ySize - 4);
-  box_fill8(vram, xSize, COL8_848484, 59, ySize - 23, 59, ySize - 5);
-  box_fill8(vram, xSize, COL8_000000, 2, ySize - 4, 59, ySize - 3);
-  box_fill8(vram, xSize, COL8_000000, 60, ySize - 24, 60, ySize - 3);
+	box_fill8(vram, x, COL8_FFFFFF,  3,     y - 24, 59,     y - 24);
+	box_fill8(vram, x, COL8_FFFFFF,  2,     y - 24,  2,     y -  4);
+	box_fill8(vram, x, COL8_848484,  3,     y -  4, 59,     y -  4);
+	box_fill8(vram, x, COL8_848484, 59,     y - 23, 59,     y -  5);
+	box_fill8(vram, x, COL8_000000,  2,     y -  3, 59,     y -  3);
+	box_fill8(vram, x, COL8_000000, 60,     y - 24, 60,     y -  3);
 
-  box_fill8(vram, xSize, COL8_848484, xSize - 47, ySize - 24, xSize - 4,
-            ySize - 24);
-  box_fill8(vram, xSize, COL8_848484, xSize - 47, ySize - 23, xSize - 47,
-            ySize - 4);
-  box_fill8(vram, xSize, COL8_FFFFFF, xSize - 47, ySize - 3, xSize - 4,
-            ySize - 3);
-  box_fill8(vram, xSize, COL8_FFFFFF, xSize - 3, ySize - 24, xSize - 3,
-            ySize - 3);
+	box_fill8(vram, x, COL8_848484, x - 47, y - 24, x -  4, y - 24);
+	box_fill8(vram, x, COL8_848484, x - 47, y - 23, x - 47, y -  4);
+	box_fill8(vram, x, COL8_FFFFFF, x - 47, y -  3, x -  4, y -  3);
+	box_fill8(vram, x, COL8_FFFFFF, x -  3, y - 24, x -  3, y -  3);
+	return;
 }

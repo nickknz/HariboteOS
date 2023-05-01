@@ -28,8 +28,8 @@ $ make qemu DEBUG=1
 ## Project progress
 - [X] day 1：Hello world
 - [X] day 2：assembly and Makefile
-- [X] 第3天：Combine C and assembly
-- [ ] 第4天：画面显示
+- [X] day 3：Combine C and assembly
+- [X] day 4：Show screen
 - [ ] 第5天：GDT/IDT
 - [ ] 第6天：中断处理
 - [ ] 第7天：FIFO
