@@ -54,3 +54,8 @@ $ make qemu DEBUG=1
 - [ ] 第26天：窗口操作提速
 - [ ] 第27天：LDT与库（未按书上处理）
 - [ ] 第28天：文件操作与文字显示（不包含日文显示部分）
+
+## Welcome to ask questions
+In the process of implementation, I also encountered a lot of trouble (eg. compile error). <br>
+Feel free to create an issue and ask your question, I will try my best to answer your question.
+
