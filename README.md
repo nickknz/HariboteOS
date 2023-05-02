@@ -1,5 +1,5 @@
-# KZOS
-
+# 《30天自制操作系统》学习笔记
+I am planning to implement OS using 《30天自制操作系统》based on Mac. 
 ## Project features
 - Uses GCC and NASM as the toolchain, allowing cross-platform use
 - Builds the kernel based on LinkerScript
