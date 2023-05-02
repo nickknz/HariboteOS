@@ -29,11 +29,15 @@ asmhead.bin:
 bootpack.bin:
 	$(CC) $(CFLAGS) -c bootpack.c -o bootpack.bin
 
+hankaku.bin: ../hankaku/hankaku.asm
+	$(AS) -f elf $< -o $@
+
+
 func.bin:
 	$(AS) -f elf func.asm -o func.bin
 
 haribote.sys: asmhead.bin bootpack.bin func.bin
-	$(LD) -m elf_i386 --oformat binary asmhead.bin bootpack.bin func.bin -o haribote.sys -T haribote.ld
+	$(LD) -m elf_i386 --oformat binary asmhead.bin bootpack.bin func.bin hankaku.bin -o haribote.sys -T haribote.ld
 
 image: ipl.bin haribote.sys
 	dd if=/dev/zero of=$(IMG) bs=512 count=2880
@@ -49,7 +53,7 @@ clean:
 	rm -rf *.lst
 	rm -rf $(IMG)
 
-qemu: clean all
+qemu: 
 	$(QEMU) -fda $(IMG) $(QEMU_FLAGS)
 
 .PHONY:

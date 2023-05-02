@@ -10,6 +10,7 @@ void set_palette(int start, int end, unsigned char *rgb);
 void box_fill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0,
                int x1, int y1);
 void init_screen(unsigned char *vram, int x, int y);
+void putfont8(unsigned char *vram, int xsize, int x, int y, char c, char *font);
 
 #define COL8_000000 0
 #define COL8_FF0000 1
@@ -37,17 +38,25 @@ struct BOOTINFO {
 // 入口函数HariMain重命名为标准的main
 // 返回类型修改为int，避免编译器警告
 int main(void) {
-  unsigned char *vram;
-	int xsize, ysize;
-	struct BOOTINFO *binfo;
+  struct BOOTINFO *binfo = (struct BOOTINFO *) 0x0ff0;
+  extern char hankaku[4096];
 
 	init_palette();
-	binfo = (struct BOOTINFO *) 0x0ff0;
-	xsize = (*binfo).scrnx;
-	ysize = (*binfo).scrny;
-	vram = (*binfo).vram;
+	init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
+  putfont8(binfo->vram, binfo->scrnx, 8, 8, COL8_FFFFFF, hankaku + 'H' * 16);
+  putfont8(binfo->vram, binfo->scrnx, 16, 8, COL8_FFFFFF, hankaku + 'e' * 16);
+  putfont8(binfo->vram, binfo->scrnx, 24, 8, COL8_FFFFFF, hankaku + 'l' * 16);
+  putfont8(binfo->vram, binfo->scrnx, 32, 8, COL8_FFFFFF, hankaku + 'l' * 16);
+  putfont8(binfo->vram, binfo->scrnx, 40, 8, COL8_FFFFFF, hankaku + 'o' * 16);
 
-	init_screen(vram, xsize, ysize);
+  putfont8(binfo->vram, binfo->scrnx, 56, 8, COL8_FFFFFF, hankaku + 'W' * 16);
+  putfont8(binfo->vram, binfo->scrnx, 64, 8, COL8_FFFFFF, hankaku + 'o' * 16);
+  putfont8(binfo->vram, binfo->scrnx, 72, 8, COL8_FFFFFF, hankaku + 'r' * 16);
+  putfont8(binfo->vram, binfo->scrnx, 80, 8, COL8_FFFFFF, hankaku + 'l'* 16);
+  putfont8(binfo->vram, binfo->scrnx, 88, 8, COL8_FFFFFF, hankaku + 'd' * 16);
+  putfont8(binfo->vram, binfo->scrnx, 96, 8, COL8_FFFFFF, hankaku + '!' * 16);
+
+
 
 	for (;;) {
 		io_hlt();
@@ -125,5 +134,23 @@ void init_screen(unsigned char *vram, int x, int y) {
 	box_fill8(vram, x, COL8_848484, x - 47, y - 23, x - 47, y -  4);
 	box_fill8(vram, x, COL8_FFFFFF, x - 47, y -  3, x -  4, y -  3);
 	box_fill8(vram, x, COL8_FFFFFF, x -  3, y - 24, x -  3, y -  3);
+	return;
+}
+
+void putfont8(unsigned char *vram, int xsize, int x, int y, char c, char *font) {
+	int i;
+	unsigned char *p, d /* data */;
+	for (i = 0; i < 16; i++) {
+		p = vram + (y + i) * xsize + x;
+		d = font[i];
+		if ((d & 0x80) != 0) { p[0] = c; }
+		if ((d & 0x40) != 0) { p[1] = c; }
+		if ((d & 0x20) != 0) { p[2] = c; }
+		if ((d & 0x10) != 0) { p[3] = c; }
+		if ((d & 0x08) != 0) { p[4] = c; }
+		if ((d & 0x04) != 0) { p[5] = c; }
+		if ((d & 0x02) != 0) { p[6] = c; }
+		if ((d & 0x01) != 0) { p[7] = c; }
+	}
 	return;
 }
