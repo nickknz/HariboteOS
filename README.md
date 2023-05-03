@@ -58,5 +58,6 @@ $ make qemu DEBUG=1
 
 ## Welcome to ask questions
 In the process of implementation, I also encountered a lot of trouble (eg. compile error). <br>
-Feel free to create an issue and ask your question, I will try my best to answer your question.
+Feel free to create an issue and ask your question, I will try my best to answer your question. <br> <br>
+If you need source code or book, you can add me Wechat: Nick_kn
 
