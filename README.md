@@ -61,3 +61,6 @@ In the process of implementation, I also encountered a lot of trouble (eg. compi
 Feel free to create an issue and ask your question, I will try my best to answer your question. <br> <br>
 If you need source code or book, you can add me Wechat: Nick_kn
 
+## Reference
+- [Source code](https://github.com/hide27k/haribote-os/tree/master)
+
