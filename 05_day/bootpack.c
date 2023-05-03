@@ -1,5 +1,8 @@
 #include <stdio.h>
 
+#include "io.h"
+#include "pm.h"
+
 void io_hlt(void);
 void io_cli(void);
 void io_sti(void);

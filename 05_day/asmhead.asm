@@ -13,9 +13,8 @@ SCRNY   EQU   0x0ff6      ; 分辨率Y
 VRAM    EQU   0x0ff8      ; 图像缓冲区的起始位置
 
   ; 使用linker script指定起始地址
-;   ORG   0xc200            ; 程序被加载的内存地址
+  ORG   0xc200            ; 程序被加载的内存地址
 
-  [SECTION .btext]
   [BITS 16]
 entry:
 ; 设置屏幕模式
@@ -54,8 +53,6 @@ entry:
   CALL  waitkbdout
 
 ; 切换到保护模式
-; NASM不支持INSTRSET命令
-; [INSTRSET "i486p"]        ; 使用486指令
   LGDT  [GDTR0]           ; 设置临时GDT
   MOV   EAX, CR0
   AND   EAX, 0x7fffffff   ; 禁用分页
@@ -95,24 +92,7 @@ pipelineflush:
   SUB   ECX, 512/4        ; IPL偏移量
   CALL  memcpy
 
-; 由于还需要asmhead才能完成
-; 完成其余的bootpack任务
-
-; bootpack启动
-; 修改后检验不通过，移除校验
-  ; MOV   EBX, BOTPAK
-  ; MOV   ECX, [EBX+16]
-  ; ADD   ECX, 3            ; ECX += 3
-  ; SHR   ECX, 2            ; ECX /= 4
-  ; JZ    skip              ; 传输完成
-  ; MOV   ESI, [EBX+20]     ; 源
-  ; ADD   ESI, EBX
-  ; MOV   EDI, [EBX+12]     ; 目标
-  ; CALL  memcpy
-
 skip:
-  ; MOV   ESP, [EBX+12]     ; 堆栈初始化
-  ; JMP   DWORD 2*8:0x0000001b
   MOV   ESP, 0xffff
   JMP   DWORD 2*8:0x00000000
 
