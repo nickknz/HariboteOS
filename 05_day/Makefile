@@ -26,9 +26,6 @@ ipl.bin:
 asmhead.bin:
 	$(AS) -f elf asmhead.asm -o asmhead.bin 
 
-bootpack.bin:
-	$(CC) $(CFLAGS) -c bootpack.c -o bootpack.bin
-
 hankaku.bin: ../hankaku/hankaku.asm
 	$(AS) -f elf $< -o $@
 

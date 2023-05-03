@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 void io_hlt(void);
 void io_cli(void);
 void io_sti(void);
@@ -11,6 +13,8 @@ void box_fill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0,
                int x1, int y1);
 void init_screen(unsigned char *vram, int x, int y);
 void putfont8(unsigned char *vram, int xsize, int x, int y, char c, char *font);
+void put_fonts8_asc(unsigned char *vram, int xsize, int x, int y, char c,
+                    char *s);
 
 #define COL8_000000 0
 #define COL8_FF0000 1
@@ -39,24 +43,16 @@ struct BOOTINFO {
 // 返回类型修改为int，避免编译器警告
 int main(void) {
   struct BOOTINFO *binfo = (struct BOOTINFO *) 0x0ff0;
-  extern char hankaku[4096];
-
+  char s[40];
+  
 	init_palette();
 	init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
-  putfont8(binfo->vram, binfo->scrnx, 8, 8, COL8_FFFFFF, hankaku + 'H' * 16);
-  putfont8(binfo->vram, binfo->scrnx, 16, 8, COL8_FFFFFF, hankaku + 'e' * 16);
-  putfont8(binfo->vram, binfo->scrnx, 24, 8, COL8_FFFFFF, hankaku + 'l' * 16);
-  putfont8(binfo->vram, binfo->scrnx, 32, 8, COL8_FFFFFF, hankaku + 'l' * 16);
-  putfont8(binfo->vram, binfo->scrnx, 40, 8, COL8_FFFFFF, hankaku + 'o' * 16);
+  put_fonts8_asc(binfo->vram, binfo->scrnx, 8, 8, COL8_FFFFFF, "ABC 123");
+  put_fonts8_asc(binfo->vram, binfo->scrnx, 31, 31, COL8_000000, "Haribote OS.");
+  put_fonts8_asc(binfo->vram, binfo->scrnx, 30, 30, COL8_FFFFFF, "Haribote OS.");
 
-  putfont8(binfo->vram, binfo->scrnx, 56, 8, COL8_FFFFFF, hankaku + 'W' * 16);
-  putfont8(binfo->vram, binfo->scrnx, 64, 8, COL8_FFFFFF, hankaku + 'o' * 16);
-  putfont8(binfo->vram, binfo->scrnx, 72, 8, COL8_FFFFFF, hankaku + 'r' * 16);
-  putfont8(binfo->vram, binfo->scrnx, 80, 8, COL8_FFFFFF, hankaku + 'l'* 16);
-  putfont8(binfo->vram, binfo->scrnx, 88, 8, COL8_FFFFFF, hankaku + 'd' * 16);
-  putfont8(binfo->vram, binfo->scrnx, 96, 8, COL8_FFFFFF, hankaku + '!' * 16);
-
-
+  sprintf(s, "scrnx = %d", binfo->scrnx);
+	put_fonts8_asc(binfo->vram, binfo->scrnx, 16, 64, COL8_FFFFFF, s);
 
 	for (;;) {
 		io_hlt();
@@ -153,4 +149,14 @@ void putfont8(unsigned char *vram, int xsize, int x, int y, char c, char *font) 
 		if ((d & 0x01) != 0) { p[7] = c; }
 	}
 	return;
+}
+
+void put_fonts8_asc(unsigned char *vram, int xsize, int x, int y, char c,
+                    char *s) {
+  extern char hankaku[4096];
+
+  for (; *s != '\0'; s++) {
+    putfont8(vram, xsize, x, y, c, hankaku + *s * 16);
+    x += 8;
+  }
 }
