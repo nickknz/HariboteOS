@@ -1,4 +1,5 @@
-# KZOS
+# 《30天自制操作系统》学习笔记
+This project aims for learning Operating System using the book《30天自制操作系统》. Because the author uses a set of non-standard tools written by himself and can only run under Windows platform, I am planning to implement this project uses NASM, GCC, Qemu and other tools (on Mac Intel) to compile and run on the basis of the original code.
 
 ## Project features
 - Uses GCC and NASM as the toolchain, allowing cross-platform use
@@ -54,3 +55,9 @@ $ make qemu DEBUG=1
 - [ ] 第26天：窗口操作提速
 - [ ] 第27天：LDT与库（未按书上处理）
 - [ ] 第28天：文件操作与文字显示（不包含日文显示部分）
+
+## Welcome to ask questions
+In the process of implementation, I also encountered a lot of trouble (eg. compile error). <br>
+Feel free to create an issue and ask your question, I will try my best to answer your question. <br> <br>
+If you need source code or book, you can add me Wechat: Nick_kn
+
