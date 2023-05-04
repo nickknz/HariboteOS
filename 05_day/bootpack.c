@@ -39,12 +39,14 @@ struct BootInfo {
   unsigned char *vram;
 };
 
+// GDT (global(segment) descriptor table)
 struct SegmentDescriptor {
   short limit_low, base_low;
   char base_mid, access_right;
   char limit_high, base_high;
 };
 
+// IDT (Interrupt descriptor table)
 struct GateDescriptor {
   short offset_low, selector;
   char dw_count, access_right;
@@ -60,35 +62,35 @@ int main(void) {
   struct BootInfo *binfo = (struct BootInfo *)0x0ff0;
   char s[40], mcursor[256];
 
-  // init_gdtidt();
-  // init_palette();
+  init_gdtidt();
+  init_palette();
 
-  // init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
+  init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
 
-  // int mx = (binfo->scrnx - 16) / 2;
-  // int my = (binfo->scrny - 28 - 16) / 2;
-  // init_mouse_cursor8(mcursor, COL8_008484);
-  // put_block8_8(binfo->vram, binfo->scrnx, 16, 16, mx, my, mcursor, 16);
+  int mx = (binfo->scrnx - 16) / 2;
+  int my = (binfo->scrny - 28 - 16) / 2;
+  init_mouse_cursor8(mcursor, COL8_008484);
+  put_block8_8(binfo->vram, binfo->scrnx, 16, 16, mx, my, mcursor, 16);
 
-  // put_fonts8_asc(binfo->vram, binfo->scrnx, 8, 8, COL8_FFFFFF, "ABC 123");
-  // put_fonts8_asc(binfo->vram, binfo->scrnx, 31, 31, COL8_000000,
-  //                "Haribote OS.");
-  // put_fonts8_asc(binfo->vram, binfo->scrnx, 30, 30, COL8_FFFFFF,
-  //                "Haribote OS.");
+  put_fonts8_asc(binfo->vram, binfo->scrnx, 8, 8, COL8_FFFFFF, "Hello");
+  put_fonts8_asc(binfo->vram, binfo->scrnx, 31, 31, COL8_000000,
+                 "Haribote OS.");
+  put_fonts8_asc(binfo->vram, binfo->scrnx, 30, 30, COL8_FFFFFF,
+                 "Haribote OS.");
 
-  // sprintf(s, "scrnx = %d", binfo->scrnx);
-  // put_fonts8_asc(binfo->vram, binfo->scrnx, 16, 64, COL8_FFFFFF, s);
+  sprintf(s, "(%d, %d)", mx, my);
+	put_fonts8_asc(binfo->vram, binfo->scrnx, 0, 60, COL8_FFFFFF, s);
 
-  int mx, my;
+  // int mx, my;
 
-	init_palette();
-	init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
-	mx = (binfo->scrnx - 16) / 2; /* 画面中央になるように座標計算 */
-	my = (binfo->scrny - 28 - 16) / 2;
-	init_mouse_cursor8(mcursor, COL8_008484);
-	put_block8_8(binfo->vram, binfo->scrnx, 16, 16, mx, my, mcursor, 16);
-	sprintf(s, "(%d, %d)", mx, my);
-	put_fonts8_asc(binfo->vram, binfo->scrnx, 0, 0, COL8_FFFFFF, s);
+	// init_palette();
+	// init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
+	// mx = (binfo->scrnx - 16) / 2; /* 画面中央になるように座標計算 */
+	// my = (binfo->scrny - 28 - 16) / 2;
+	// init_mouse_cursor8(mcursor, COL8_008484);
+	// put_block8_8(binfo->vram, binfo->scrnx, 16, 16, mx, my, mcursor, 16);
+	// sprintf(s, "(%d, %d)", mx, my);
+	// put_fonts8_asc(binfo->vram, binfo->scrnx, 0, 0, COL8_FFFFFF, s);
 
   for (;;) {
     io_hlt();
@@ -247,7 +249,7 @@ void init_gdtidt(void) {
   }
 
   set_segmdesc(gdt + 1, 0xffffffff, 0x00000000, 0x4092);
-  set_segmdesc(gdt + 2, 0x0007ffff, 0x00280000, 0x409a);
+  set_segmdesc(gdt + 2, 0x0007ffff, 0x00280000, 0x409a);    // prepare for bootpack.bin
   load_gdtr(0xffff, 0x00270000);
 
   for (int i = 0; i < 256; i++) {
