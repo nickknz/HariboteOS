@@ -13,7 +13,7 @@ CFLAGS += -Wall -Wno-format -Wno-unused
 # static linking which tells the compiler to link the resulting object file statically
 CFLAGS += -std=gnu99 -static -m32		
 # "-I./libc/include" specifies the directory where the compiler should look for header files.
-CFLAGS += -I./libc/include				
+CFLAGS += -I ./include -I ./libc/include				
 CFLAGS += -ffunction-sections -nostdlib -nostdinc -fno-builtin -ffreestanding
 CFLAGS += -fno-pie
 
@@ -22,7 +22,8 @@ QEMU_FLAGS 	+= -no-reboot -d in_asm
 # C Library Objects
 L_OBJS  := libc/stdio/stdio.bin
 # Kernel Objects
-K_OBJS	:= bootpack.bin io.bin pm.bin hankaku.bin
+K_OBJS	:= bootpack.bin io.bin pm.bin hankaku.bin desctbl.bin graphic.bin \
+		# int.bin inthandler.bin
 SYS	:= haribote.sys
 IMG	:= haribote.img
 
