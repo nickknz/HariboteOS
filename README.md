@@ -31,7 +31,7 @@ $ make qemu DEBUG=1
 - [X] day 2：assembly and Makefile
 - [X] day 3：Combine C and assembly
 - [X] day 4：Show screen
-- [ ] 第5天：GDT/IDT
+- [X] day 5：GDT/IDT
 - [ ] 第6天：中断处理
 - [ ] 第7天：FIFO
 - [ ] 第8天：鼠标与32位模式

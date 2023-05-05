@@ -9,7 +9,7 @@ struct BootInfo{  /* 0x0ff0-0x0fff */
   char vmode; /* 显卡模式为多少位彩色 */
   char reserve;
   short scrnx, scrny; /* 画面分辨率 */
-  char *vram;
+  unsigned char *vram;
 };
 
 #endif // _BOOTPACK_H_
