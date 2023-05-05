@@ -1,7 +1,10 @@
+#include <stdio.h>
+
 #include "bootpack.h"
 #include "graphic.h"
 #include "int.h"
 #include "io.h"
+#include "keyboard.h"
 
 void init_pic(void) {
   // 禁止所有中断
@@ -24,14 +27,14 @@ void init_pic(void) {
 
 /* 来自PS/2键盘的中断 */
 void int_handler21(int *esp) {
-    struct BootInfo *binfo = (struct BootInfo *) ADR_BOOTINFO;
-
-    box_fill8(binfo->vram, binfo->scrnx, COL8_000000, 0, 0, 32 * 8 - 1, 15);
-    put_fonts8_asc(binfo->vram, binfo->scrnx, 0, 0, COL8_FFFFFF, "INT 21 (IRQ-1) : PS/2 keyboard");
-
-    for (;;) {
-        io_hlt();
-    }
+  struct BootInfo *binfo = (struct BootInfo *) ADR_BOOTINFO;
+  unsigned char data, s[4];
+  io_out8(PIC0_OCW2, 0x61); /* 通知PIC"IRQ-01已经受理完毕" */
+  data = io_in8(PORT_KEYDAT);
+  sprintf(s, "%X", data);
+  box_fill8(binfo->vram, binfo->scrnx, COL8_008484, 0, 16, 15, 31);
+  put_fonts8_asc(binfo->vram, binfo->scrnx, 0, 16, COL8_FFFFFF, s);
+  return;
 }
 
 void int_handler2c(int *esp) {

@@ -22,14 +22,8 @@ int main(void) {
   init_mouse_cursor8(mcursor, COL8_008484);
   put_block8_8(binfo->vram, binfo->scrnx, 16, 16, mx, my, mcursor, 16);
 
-  put_fonts8_asc(binfo->vram, binfo->scrnx, 8, 8, COL8_FFFFFF, "Hello");
-  put_fonts8_asc(binfo->vram, binfo->scrnx, 31, 31, COL8_000000,
-                 "Haribote OS.");
-  put_fonts8_asc(binfo->vram, binfo->scrnx, 30, 30, COL8_FFFFFF,
-                 "Haribote OS.");
-
   sprintf(s, "(%d, %d)", mx, my);
-	put_fonts8_asc(binfo->vram, binfo->scrnx, 0, 60, COL8_FFFFFF, s);
+	put_fonts8_asc(binfo->vram, binfo->scrnx, 0, 0, COL8_FFFFFF, s);
 
   io_out8(PIC0_IMR, 0xf9); // 开放PIC1以及键盘中断
   io_out8(PIC1_IMR, 0xef); // 开放鼠标中断

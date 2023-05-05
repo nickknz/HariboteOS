@@ -33,7 +33,7 @@ $ make qemu DEBUG=1
 - [X] day 4：Show screen
 - [X] day 5：GDT/IDT
 - [X] day 6：Interrupt processing
-- [ ] 第7天：FIFO
+- [ ] day 7：FIFO and mouse control
 - [ ] 第8天：鼠标与32位模式
 - [ ] 第9天：内存管理
 - [ ] 第10天：窗口叠加

@@ -62,6 +62,16 @@ void vprintfmt(void (*fputch)(char, void *), void *data, const char *fmt,
       }
       break;
 
+    case 'x':
+      num = va_arg(ap, unsigned int);
+      printnum(fputch, data, num, 16);
+      break;
+
+    case 'X':
+      num = va_arg(ap, unsigned int);
+      printnum(fputch, data, num, 16);
+      break;
+
     case '%':
       fputch('%', data);
       break;
