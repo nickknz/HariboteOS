@@ -13,6 +13,8 @@ int main(void) {
   init_gdtidt();
   init_pic();
 
+  io_sti(); // store interrupt flag, so that CPU can accept all interrupts from device
+
   init_palette();
   init_screen8(binfo->vram, binfo->scrnx, binfo->scrny);
   int mx = (binfo->scrnx - 16) / 2;
@@ -28,6 +30,9 @@ int main(void) {
 
   sprintf(s, "(%d, %d)", mx, my);
 	put_fonts8_asc(binfo->vram, binfo->scrnx, 0, 60, COL8_FFFFFF, s);
+
+  io_out8(PIC0_IMR, 0xf9); // 开放PIC1以及键盘中断
+  io_out8(PIC1_IMR, 0xef); // 开放鼠标中断
 
   for (;;) {
     io_hlt();

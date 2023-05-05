@@ -1,5 +1,5 @@
 #include "desctbl.h"
-// #include "int.h"
+#include "int.h"
 
 void init_gdtidt(void) {
     struct SegmentDescriptor *gdt = (struct SegmentDescriptor *)ADR_GDT;
@@ -18,9 +18,9 @@ void init_gdtidt(void) {
     }
     load_idtr(LIMIT_IDT, ADR_IDT);
 
-//   set_gatedesc(idt + 0x21, (int)asm_int_handler21, 2 * 8, AR_INTGATE32);
-//   set_gatedesc(idt + 0x27, (int)asm_int_handler27, 2 * 8, AR_INTGATE32);
-//   set_gatedesc(idt + 0x2c, (int)asm_int_handler2c, 2 * 8, AR_INTGATE32);
+    set_gatedesc(idt + 0x21, (int)asm_int_handler21, 2 * 8, AR_INTGATE32);
+    // set_gatedesc(idt + 0x27, (int)asm_int_handler27, 2 * 8, AR_INTGATE32);
+    set_gatedesc(idt + 0x2c, (int)asm_int_handler2c, 2 * 8, AR_INTGATE32);
     return; 
 }
 

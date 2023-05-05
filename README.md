@@ -32,7 +32,7 @@ $ make qemu DEBUG=1
 - [X] day 3：Combine C and assembly
 - [X] day 4：Show screen
 - [X] day 5：GDT/IDT
-- [ ] 第6天：中断处理
+- [X] day 6：Interrupt processing
 - [ ] 第7天：FIFO
 - [ ] 第8天：鼠标与32位模式
 - [ ] 第9天：内存管理
