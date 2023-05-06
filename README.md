@@ -33,10 +33,10 @@ $ make qemu DEBUG=1
 - [X] day 4：Show screen
 - [X] day 5：GDT/IDT
 - [X] day 6：Interrupt processing
-- [ ] day 7：FIFO and mouse control
-- [ ] 第8天：鼠标与32位模式
-- [ ] 第9天：内存管理
-- [ ] 第10天：窗口叠加
+- [X] day 7：FIFO and mouse control
+- [ ] day 8：鼠标与32位模式
+- [ ] day 9：内存管理
+- [ ] day 10：窗口叠加
 - [ ] 第11天：窗口处理
 - [ ] 第12天：定时器1
 - [ ] 第13天：定时器2
