@@ -6,7 +6,7 @@
 #include "int.h"
 #include "io.h"
 #include "keyboard.h"
-// #include "mouse.h"
+#include "mouse.h"
 
 void init_pic(void) {
   // 禁止所有中断
@@ -27,7 +27,6 @@ void init_pic(void) {
   io_out8(PIC1_IMR, 0xff); // 禁止全部中断
 }
 
-struct FIFO8 keyfifo;
 /* 来自PS/2键盘的中断 */
 void int_handler21(int *esp) {
   io_out8(PIC0_OCW2, 0x61); // 通知PIC IRQ-1的受理已经完成
@@ -36,15 +35,13 @@ void int_handler21(int *esp) {
   fifo8_put(&keyfifo, data);
 }
 
+/* 来自PS/2鼠标的中断 */
 void int_handler2c(int *esp) {
-  struct BootInfo *binfo = (struct BootInfo *) ADR_BOOTINFO;
-
-  box_fill8(binfo->vram, binfo->scrnx, COL8_000000, 0, 0, 32 * 8 - 1, 15);
-	put_fonts8_asc(binfo->vram, binfo->scrnx, 0, 0, COL8_FFFFFF, "INT 2C (IRQ-12) : PS/2 mouse");
-
-	for (;;) {
-		io_hlt();
-	}
+  unsigned char data;
+  io_out8(PIC1_OCW2, 0x64); /* 通知PIC1 IRQ-12的受理已经完成 */
+  io_out8(PIC0_OCW2, 0x62); /* 通知PIC0 IRQ-02的受理已经完成 */
+  data = io_in8(PORT_KEYDAT);
+  fifo8_put(&mousefifo, data);
 }
 
 void int_handler27(int *esp) {
