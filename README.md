@@ -46,8 +46,8 @@ $ make qemu DEBUG=1
 - [X] day 5：GDT/IDT
 - [X] day 6：Interrupt processing
 - [X] day 7：FIFO and mouse control
-- [ ] day 8：鼠标与32位模式
-- [ ] day 9：内存管理
+- [X] day 8：Mouse and 32-bit mode
+- [ ] day 9：Memory Management
 - [ ] day 10：窗口叠加
 - [ ] 第11天：窗口处理
 - [ ] 第12天：定时器1
