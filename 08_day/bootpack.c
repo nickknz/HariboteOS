@@ -13,6 +13,7 @@ int main(void) {
   struct BootInfo *binfo = (struct BootInfo *)ADR_BOOTINFO;
   char s[40], mcursor[256];
   unsigned char key;
+  struct MouseDec mdec;
 
   init_gdtidt();
   init_pic(); // GDT/IDT完成初始化，开放CPU中断
@@ -37,7 +38,8 @@ int main(void) {
   sprintf(s, "(%d, %d)", mx, my);
   put_fonts8_asc(binfo->vram, binfo->scrnx, 0, 0, COL8_FFFFFF, s);
 
-  enable_mouse();
+  
+  enable_mouse(&mdec);
 
   for (;;) {
     io_cli();
@@ -53,14 +55,25 @@ int main(void) {
         put_fonts8_asc(binfo->vram, binfo->scrnx, 0, 16, COL8_FFFFFF, s);
       } else if (fifo8_status(&mousefifo)) {
         key = (unsigned char)fifo8_get(&mousefifo);
-
         io_sti();
-        sprintf(s, "%X", key);
-        box_fill8(binfo->vram, binfo->scrnx, COL8_008484, 32, 16, 47, 31);
-        put_fonts8_asc(binfo->vram, binfo->scrnx, 32, 16, COL8_FFFFFF, s);
+        if (mouse_decode(&mdec, key) != 0) {
+          /* 数据的3个字节都齐了，显示出来 */
+          sprintf(s, "[lcr %d %d]", mdec.x, mdec.y);
+          if ((mdec.btn & 0x01) != 0) {
+            s[1] = 'L';
+          }
+          if ((mdec.btn & 0x02) != 0) {
+            s[3] = 'R';
+          }
+          if ((mdec.btn & 0x04) != 0) {
+            s[2] = 'C';
+          }
+          box_fill8(binfo->vram, binfo->scrnx, COL8_008484, 32, 16, 32 + 15 * 8 - 1, 31);
+          put_fonts8_asc(binfo->vram, binfo->scrnx, 32, 16, COL8_FFFFFF, s);
+        }
       }
     }
+    
   }
-
   return 0;
 }
