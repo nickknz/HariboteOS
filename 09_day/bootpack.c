@@ -12,9 +12,10 @@
 
 int main(void) {
   struct BootInfo *binfo = (struct BootInfo *)ADR_BOOTINFO;
-  char s[40], mcursor[256];
-  unsigned char key;
+  struct MemMan *memman = (struct MemMan *)MEMMAN_ADDR;
   struct MouseDec mdec;
+  char s[40], mcursor[256];
+  unsigned char data;
   unsigned int memtotal;
 
   init_gdtidt();
@@ -42,10 +43,14 @@ int main(void) {
 
   enable_mouse(&mdec);
 
-  memtotal = memtest(0x00400000, 0xbfffffff) / (1024 * 1024);
-	sprintf(s, "memory %dMB", memtotal);
-	put_fonts8_asc(binfo->vram, binfo->scrnx, 0, 32, COL8_FFFFFF, s);
+  memtotal = memtest(0x00400000, 0xbfffffff);
+  memman_init(memman);
+  memman_free(memman, 0x00001000, 0x0009e000); // 0x00001000 ~ 0x0009efff
+  memman_free(memman, 0x00400000, memtotal - 0x00400000);
 
+  sprintf(s, "memory %dMB, free: %dKB", memtotal / (1024 * 1024),
+          memman_total(memman) / 1024);
+  put_fonts8_asc(binfo->vram, binfo->scrnx, 0, 32, COL8_FFFFFF, s);
 
   for (;;) {
     io_cli();
@@ -53,16 +58,16 @@ int main(void) {
       io_stihlt();
     } else {
       if (fifo8_status(&keyfifo)) {
-        key = (unsigned char)fifo8_get(&keyfifo);
+        data = (unsigned char)fifo8_get(&keyfifo);
 
         io_sti();
-        sprintf(s, "%X", key);
+        sprintf(s, "%X", data);
         box_fill8(binfo->vram, binfo->scrnx, COL8_008484, 0, 16, 15, 31);
         put_fonts8_asc(binfo->vram, binfo->scrnx, 0, 16, COL8_FFFFFF, s);
       } else if (fifo8_status(&mousefifo)) {
-        key = (unsigned char)fifo8_get(&mousefifo);
+        data = (unsigned char)fifo8_get(&mousefifo);
         io_sti();
-        if (mouse_decode(&mdec, key) != 0) {
+        if (mouse_decode(&mdec, data) != 0) {
           /* 数据的3个字节都齐了，显示出来 */
           sprintf(s, "[lcr %d %d]", mdec.x, mdec.y);
           if ((mdec.btn & 0x01) != 0) {
