@@ -8,12 +8,14 @@
 #include "fifo.h"
 #include "keyboard.h"
 #include "mouse.h"
+#include "mem.h"
 
 int main(void) {
   struct BootInfo *binfo = (struct BootInfo *)ADR_BOOTINFO;
   char s[40], mcursor[256];
   unsigned char key;
   struct MouseDec mdec;
+  unsigned int memtotal;
 
   init_gdtidt();
   init_pic(); // GDT/IDT完成初始化，开放CPU中断
@@ -39,6 +41,11 @@ int main(void) {
   put_fonts8_asc(binfo->vram, binfo->scrnx, 0, 0, COL8_FFFFFF, s);
 
   enable_mouse(&mdec);
+
+  memtotal = memtest(0x00400000, 0xbfffffff) / (1024 * 1024);
+	sprintf(s, "memory %dMB", memtotal);
+	put_fonts8_asc(binfo->vram, binfo->scrnx, 0, 32, COL8_FFFFFF, s);
+
 
   for (;;) {
     io_cli();

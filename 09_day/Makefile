@@ -23,7 +23,7 @@ QEMU_FLAGS 	+= -no-reboot -d in_asm
 L_OBJS  := libc/stdio/stdio.bin
 # Kernel Objects
 K_OBJS	:= bootpack.bin io.bin pm.bin hankaku.bin desctbl.bin graphic.bin \
-		int.bin inthandler.bin fifo.bin keyboard.bin mouse.bin
+		int.bin inthandler.bin fifo.bin keyboard.bin mouse.bin mem.bin
 SYS	:= haribote.sys
 IMG	:= haribote.img
 
