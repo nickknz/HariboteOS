@@ -8,7 +8,7 @@
 #include "fifo.h"
 #include "keyboard.h"
 #include "mouse.h"
-#include "mem.h"
+#include "memory.h"
 
 int main(void) {
   struct BootInfo *binfo = (struct BootInfo *)ADR_BOOTINFO;
