@@ -48,7 +48,7 @@ $ make qemu DEBUG=1
 - [X] day 7：FIFO and mouse control
 - [X] day 8：Mouse and 32-bit mode
 - [X] day 9：Memory Management
-- [ ] day 10：窗口叠加
+- [X] day 10：Processing overlap
 - [ ] 第11天：窗口处理
 - [ ] 第12天：定时器1
 - [ ] 第13天：定时器2
