@@ -1,0 +1,53 @@
+     1                                    [BITS 32]
+     2                                  
+     3                                    GLOBAL asm_int_handler21, asm_int_handler27, asm_int_handler2c
+     4                                  
+     5                                    EXTERN int_handler21, int_handler27, int_handler2c
+     6                                  
+     7                                  asm_int_handler21:
+     8 00000000 06                        PUSH    ES
+     9 00000001 1E                        PUSH    DS
+    10 00000002 60                        PUSHAD
+    11 00000003 89E0                      MOV     EAX, ESP
+    12 00000005 50                        PUSH    EAX
+    13 00000006 668CD0                    MOV     AX, SS
+    14 00000009 8ED8                      MOV     DS, AX
+    15 0000000B 8EC0                      MOV     ES, AX
+    16 0000000D E8(00000000)              CALL    int_handler21
+    17 00000012 58                        POP     EAX
+    18 00000013 61                        POPAD
+    19 00000014 1F                        POP     DS
+    20 00000015 07                        POP     ES
+    21 00000016 CF                        IRETD
+    22                                  
+    23                                  asm_int_handler27:
+    24 00000017 06                        PUSH    ES
+    25 00000018 1E                        PUSH    DS
+    26 00000019 60                        PUSHAD
+    27 0000001A 89E0                      MOV     EAX, ESP
+    28 0000001C 50                        PUSH    EAX
+    29 0000001D 668CD0                    MOV     AX, SS
+    30 00000020 8ED8                      MOV     DS, AX
+    31 00000022 8EC0                      MOV     ES, AX
+    32 00000024 E8(00000000)              CALL    int_handler27
+    33 00000029 58                        POP     EAX
+    34 0000002A 61                        POPAD
+    35 0000002B 1F                        POP     DS
+    36 0000002C 07                        POP     ES
+    37 0000002D CF                        IRETD
+    38                                  
+    39                                  asm_int_handler2c:
+    40 0000002E 06                        PUSH    ES
+    41 0000002F 1E                        PUSH    DS
+    42 00000030 60                        PUSHAD
+    43 00000031 89E0                      MOV     EAX, ESP
+    44 00000033 50                        PUSH    EAX
+    45 00000034 668CD0                    MOV     AX, SS
+    46 00000037 8ED8                      MOV     DS, AX
+    47 00000039 8EC0                      MOV     ES, AX
+    48 0000003B E8(00000000)              CALL    int_handler2c
+    49 00000040 58                        POP     EAX
+    50 00000041 61                        POPAD
+    51 00000042 1F                        POP     DS
+    52 00000043 07                        POP     ES
+    53 00000044 CF                        IRETD

@@ -1,0 +1,16 @@
+     1                                    [BITS 32]
+     2                                  
+     3                                    GLOBAL load_gdtr, load_idtr
+     4                                  
+     5                                    [SECTION .text]
+     6                                  load_gdtr:               ; void load_gdt(int limit, int addr);
+     7 00000000 668B442404                MOV   AX, [ESP+4]     ; limit
+     8 00000005 6689442406                MOV   [ESP+6], AX
+     9 0000000A 0F01542406                LGDT  [ESP+6]
+    10 0000000F C3                        RET
+    11                                  
+    12                                  load_idtr:               ; void load_idt(int limit, int addr);
+    13 00000010 668B442404                MOV   AX, [ESP+4]     ; limit
+    14 00000015 6689442406                MOV   [ESP+6], AX
+    15 0000001A 0F015C2406                LIDT  [ESP+6]
+    16 0000001F C3                        RET

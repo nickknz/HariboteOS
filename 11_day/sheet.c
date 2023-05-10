@@ -110,6 +110,12 @@ void sheet_refreshsub(struct Shtctl *ctl, int vx0, int vy0, int vx1, int vy1) {
   unsigned char *buf, *vram = ctl->vram;
   struct Sheet *sht;
 
+  /* 如果refresh的范围超出了画面则修正 */
+  if (vx0 < 0) { vx0 = 0; }
+  if (vy0 < 0) { vy0 = 0; }
+  if (vx1 > ctl->xsize) { vx1 = ctl->xsize; }
+  if (vy1 > ctl->ysize) { vy1 = ctl->ysize; }
+
   for (int h = 0; h <= ctl->top; h++) {
     sht = ctl->sheets[h];
     buf = sht->buf;

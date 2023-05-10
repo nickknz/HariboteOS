@@ -1,0 +1,114 @@
+     1                                    [BITS 32]
+     2                                  
+     3                                    ; 程序中包含函数名
+     4                                    GLOBAL io_hlt, io_cli, io_sti, io_stihlt
+     5                                    GLOBAL io_in8, io_in16, io_in32
+     6                                    GLOBAL io_out8, io_out16, io_out32
+     7                                    GLOBAL io_load_eflags, io_store_eflags
+     8                                    GLOBAL io_load_cr0, io_store_cr0
+     9                                  
+    10                                    [SECTION .text]
+    11                                  io_hlt:                 ; void io_hlt(void);
+    12 00000000 F4                        HLT
+    13 00000001 C3                        RET
+    14                                  
+    15                                  io_cli:                 ; void io_cli(void);
+    16 00000002 FA                        CLI
+    17 00000003 C3                        RET
+    18                                  
+    19                                  io_sti:                 ; void io_sti(void);
+    20 00000004 FB                        STI
+    21 00000005 C3                        RET
+    22                                  
+    23                                  io_stihlt:              ; void io_stihlt(void);
+    24 00000006 FB                        STI
+    25 00000007 F4                        HLT
+    26 00000008 C3                        RET
+    27                                  
+    28                                  io_in8:                 ; int io_in8(int port);
+    29 00000009 8B542404                  MOV     EDX, [ESP+4]  ; port
+    30 0000000D B800000000                MOV     EAX, 0
+    31 00000012 EC                        IN      AL, DX
+    32 00000013 C3                        RET
+    33                                  
+    34                                  io_in16:                ; int io_in16(int port);
+    35 00000014 8B542404                  MOV     EDX, [ESP+4]  ; port
+    36 00000018 B800000000                MOV     EAX, 0
+    37 0000001D 66ED                      IN      AX, DX
+    38 0000001F C3                        RET
+    39                                  
+    40                                  io_in32:                ; int io_in32(int port);
+    41 00000020 8B542404                  MOV     EDX, [ESP+4]  ; port
+    42 00000024 ED                        IN      EAX, DX
+    43 00000025 C3                        RET
+    44                                  
+    45                                  io_out8:                ; void io_out8(int port, int data);
+    46 00000026 8B542404                  MOV     EDX, [ESP+4]  ; port
+    47 0000002A 8A442408                  MOV     AL, [ESP+8]   ; data
+    48 0000002E EE                        OUT     DX, AL
+    49 0000002F C3                        RET
+    50                                  
+    51                                  io_out16:               ; void io_out16(int port, int data);
+    52 00000030 8B542404                  MOV     EDX, [ESP+4]  ; port
+    53 00000034 668B442408                MOV     AX, [ESP+8]   ; data
+    54 00000039 66EF                      OUT     DX, AX
+    55 0000003B C3                        RET
+    56                                  
+    57                                  io_out32:               ; void io_out32(int port, int data);
+    58 0000003C 8B542404                  MOV     EDX, [ESP+4]  ; port
+    59 00000040 8B442408                  MOV     EAX, [ESP+8]  ; data
+    60 00000044 EF                        OUT     DX, EAX
+    61 00000045 C3                        RET
+    62                                  
+    63                                  io_load_eflags:         ; int io_load_eflags(void);
+    64 00000046 9C                        PUSHFD
+    65 00000047 58                        POP     EAX
+    66 00000048 C3                        RET
+    67                                  
+    68                                  io_store_eflags:        ; void io_store_eflags(int eflags);
+    69 00000049 8B442404                  MOV     EAX, [ESP+4]  ; eflags
+    70 0000004D 50                        PUSH    EAX
+    71 0000004E 9D                        POPFD
+    72 0000004F C3                        RET
+    73                                  
+    74                                  io_load_cr0:            ; int io_load_cr0(void);
+    75 00000050 0F20C0                    MOV     EAX, CR0
+    76 00000053 C3                        RET
+    77                                  
+    78                                  io_store_cr0:           ; void io_store_cr0(int cr0);
+    79 00000054 8B442404                  MOV     EAX, [ESP+4]  ; cr0
+    80 00000058 0F22C0                    MOV     CR0, EAX
+    81 0000005B C3                        RET
+    82                                  
+    83                                  ; memtest_sub: ; unsigned int memtest_sub(unsigned int start, unsigned int end)
+    84                                  ;   PUSH EDI ; （由于还要使用EBX, ESI, EDI）
+    85                                  ;   PUSH ESI
+    86                                  ;   PUSH EBX
+    87                                  ;   MOV ESI,0xaa55aa55 ; pat0 = 0xaa55aa55;
+    88                                  ;   MOV EDI,0x55aa55aa ; pat1 = 0x55aa55aa;
+    89                                  ;   MOV EAX,[ESP+12+4] ; i = start;
+    90                                  ; mts_loop:
+    91                                  ;   MOV EBX,EAX
+    92                                  ;   ADD EBX,0xffc ; p = i + 0xffc;
+    93                                  ;   MOV EDX,[EBX] ; old = *p;
+    94                                  ;   MOV [EBX],ESI ; *p = pat0;
+    95                                  ;   XOR DWORD [EBX],0xffffffff ; *p ^= 0xffffffff;
+    96                                  ;   CMP EDI,[EBX] ; if (*p != pat1) goto fin;
+    97                                  ;   JNE mts_fin
+    98                                  ;   XOR DWORD [EBX],0xffffffff ; *p ^= 0xffffffff;
+    99                                  ;   CMP ESI,[EBX] ; if (*p != pat0) goto fin;
+   100                                  ;   JNE mts_fin
+   101                                  ;   MOV [EBX],EDX ; *p = old;
+   102                                  ;   ADD EAX,0x1000 ; i += 0x1000;
+   103                                  ;   CMP EAX,[ESP+12+8] ; if (i <= end) goto mts_loop;
+   104                                  ;   JBE mts_loop
+   105                                  ;   POP EBX
+   106                                  ;   POP ESI
+   107                                  ;   POP EDI
+   108                                  ;   RET
+   109                                  ; mts_fin:
+   110                                  ;   MOV [EBX],EDX ; *p = old;
+   111                                  ;   POP EBX
+   112                                  ;   POP ESI
+   113                                  ;   POP EDI
+   114                                  ;   RET
