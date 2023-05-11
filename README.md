@@ -10,16 +10,16 @@ This project aims for learning Operating System using the book《30天自制操�
 - Supports Chinese keyboard input.
 
 ## Memory Location
-| Memory Range           | Description                                     | Size     |
-| ----------------------| ----------------------------------------------- | -------- |
-| 0x00000000 - 0x000fffff | Used during boot, becomes empty afterwards       | 1 MB     |
-| 0x00100000 - 0x00267fff | Used to store contents of a floppy disk          | 1440 KB  |
+| Memory Range            | Description                                     | Size     |
+| ------------------------| ----------------------------------------------- | -------- |
+| 0x00000000 - 0x000fffff | Used during boot, becomes empty afterwards      | 1 MB     |
+| 0x00100000 - 0x00267fff | Used to store contents of a floppy disk         | 1440 KB  |
 | 0x00268000 - 0x0026f7ff | Empty                                           | 30 KB    |
 | 0x0026f800 - 0x0026ffff | Interrupt Descriptor Table (IDT)                | 2 KB     |
-| 0x00270000 - 0x0027ffff | Global Descriptor Table (GDT)                    | 64 KB    |
-| 0x00280000 - 0x002fffff | Boot loader program (bootpack.hrb)               | 512 KB   |
+| 0x00270000 - 0x0027ffff | Global Descriptor Table (GDT)                   | 64 KB    |
+| 0x00280000 - 0x002fffff | Boot loader program (bootpack.hrb)              | 512 KB   |
 | 0x00300000 - 0x003fffff | Stack and other data                            | 1 MB     |
-| 0x00400000 -           | Empty                                           | N/A      |
+| 0x00400000 -            | The location formemman_alloc                    | 128MB    |
 
 ## Environment set up
 Please use the x86_64-elf-gcc toolchain to compile on Mac. It can be installed using the command "brew install x86_64-elf-gcc x86_64-elf-binutils x86_64-elf-gdb".
