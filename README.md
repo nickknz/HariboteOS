@@ -49,9 +49,9 @@ $ make qemu DEBUG=1
 - [X] day 8：Mouse and 32-bit mode
 - [X] day 9：Memory Management
 - [X] day 10：Processing overlap
-- [ ] 第11天：窗口处理
-- [ ] 第12天：定时器1
-- [ ] 第13天：定时器2
+- [X] day 11：Improve refresh Algorithm
+- [ ] day 12：Timer1
+- [ ] day 13：Timer2
 - [ ] 第14天：键盘输入
 - [ ] 第15天：多任务1
 - [ ] 第16天：多任务2
