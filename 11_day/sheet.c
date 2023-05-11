@@ -18,6 +18,7 @@ struct Shtctl *shtctl_init(struct MemMan *memman, unsigned char *vram,
 
   for (int i = 0; i < MAX_SHEETS; i++) {
     ctl->sheets0[i].flags = 0; // 标记为未使用
+    ctl->sheets0[i].ctl = ctl; /* 记录所属*/ /* 这里！ */
   }
 
   return ctl;
@@ -45,7 +46,8 @@ void sheet_setbuf(struct Sheet *sht, unsigned char *buf, int xsize, int ysize,
   sht->col_inv = col_inv;
 }
 
-void sheet_updown(struct Shtctl *ctl, struct Sheet *sht, int height) {
+void sheet_updown(struct Sheet *sht, int height) {
+  struct Shtctl *ctl = sht->ctl;
   int h, old = sht->height;
 
   // 如果指定的高度过高或过低，则进行修正
@@ -151,16 +153,16 @@ void sheet_refreshsub(struct Shtctl *ctl, int vx0, int vy0, int vx1, int vy1) {
   }
 }
 
-void sheet_refresh(struct Shtctl *ctl, struct Sheet *sht, int bx0, int by0,
+void sheet_refresh(struct Sheet *sht, int bx0, int by0,
                    int bx1, int by1) {
   if (sht->height >= 0) {
     // 如果正在显示，则按新图层的信息刷新画面
-    sheet_refreshsub(ctl, sht->vx0 + bx0, sht->vy0 + by0, sht->vx0 + bx1,
+    sheet_refreshsub(sht->ctl, sht->vx0 + bx0, sht->vy0 + by0, sht->vx0 + bx1,
                      sht->vy0 + by1);
   }
 }
 
-void sheet_slide(struct Shtctl *ctl, struct Sheet *sht, int vx0, int vy0) {
+void sheet_slide(struct Sheet *sht, int vx0, int vy0) {
   int old_vx0 = sht->vx0, old_vy0 = sht->vy0;
 
   sht->vx0 = vx0;
@@ -168,15 +170,15 @@ void sheet_slide(struct Shtctl *ctl, struct Sheet *sht, int vx0, int vy0) {
 
   if (sht->height >= 0) {
     // 如果正在显示，则按新图层的信息刷新画面
-    sheet_refreshsub(ctl, old_vx0, old_vy0, old_vx0 + sht->bxsize,
+    sheet_refreshsub(sht->ctl, old_vx0, old_vy0, old_vx0 + sht->bxsize,
                      old_vy0 + sht->bysize);
-    sheet_refreshsub(ctl, vx0, vy0, vx0 + sht->bxsize, vy0 + sht->bysize);
+    sheet_refreshsub(sht->ctl, vx0, vy0, vx0 + sht->bxsize, vy0 + sht->bysize);
   }
 }
 
-void sheet_free(struct Shtctl *ctl, struct Sheet *sht) {
+void sheet_free(struct Sheet *sht) {
   if (sht->height >= 0) {
-    sheet_updown(ctl, sht, -1); // 如果处于显示状态，则先设定为隐藏
+    sheet_updown(sht, -1); // 如果处于显示状态，则先设定为隐藏
   }
 
   sht->flags = 0; // 未使用标志
