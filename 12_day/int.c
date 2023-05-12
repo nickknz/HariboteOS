@@ -7,6 +7,7 @@
 #include "io.h"
 #include "keyboard.h"
 #include "mouse.h"
+#include "timer.h"
 
 void init_pic(void) {
   // 禁止所有中断
@@ -25,6 +26,12 @@ void init_pic(void) {
 
   io_out8(PIC0_IMR, 0xfb); // PIC1以外中断全部禁止
   io_out8(PIC1_IMR, 0xff); // 禁止全部中断
+}
+
+void int_handler20(int *esp) {
+    io_out8(PIC0_OCW2, 0x60); /* 把IRQ-00信号接收完了的信息通知给PIC */
+    timerctl.count++;
+    return;
 }
 
 /* 来自PS/2键盘的中断 */

@@ -18,10 +18,12 @@
 
 void init_pic(void);
 
+void int_handler20(int *esp);
 void int_handler21(int *esp);
 void int_handler27(int *esp);
 void int_handler2c(int *esp);
 
+void asm_int_handler20(void);
 void asm_int_handler21(void);
 void asm_int_handler27(void);
 void asm_int_handler2c(void);

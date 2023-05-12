@@ -11,6 +11,7 @@
 #include "mouse.h"
 #include "sheet.h"
 #include "window.h"
+#include "timer.h"
 
 int main(void) {
   struct BootInfo *binfo = (struct BootInfo *)ADR_BOOTINFO;
@@ -18,7 +19,7 @@ int main(void) {
   struct MouseDec mdec;
   char s[40], mcursor[256];
   unsigned char data;
-  unsigned int memtotal, count = 0;
+  unsigned int memtotal;
   struct Shtctl *shtctl;
   struct Sheet *sht_back, *sht_mouse, *sht_win;
   unsigned char *buf_back, buf_mouse[256], *buf_win;
@@ -31,8 +32,9 @@ int main(void) {
   fifo8_init(&keyfifo, KEY_FIFO_BUF_SIZE, keybuf);
   fifo8_init(&mousefifo, MOUSE_FIFO_BUF_SIZE, mousebuf);
 
-  io_out8(PIC0_IMR, 0xf9); // 开放PIC1以及键盘中断
-  io_out8(PIC1_IMR, 0xef); // 开放鼠标中断
+  init_pit(); /* 这里！ */
+  io_out8(PIC0_IMR, 0xf8); /* PIT和PIC1和键盘设置为许可(11111000) */ /* 这里！ */
+  io_out8(PIC1_IMR, 0xef); /* 鼠标设置为许可(11101111) */
 
   init_keyboard();
   enable_mouse(&mdec);
@@ -75,16 +77,14 @@ int main(void) {
   sheet_refresh(sht_back, 0, 0, binfo->scrnx, 48);
 
   for (;;) {
-    count++;
-    sprintf(s, "%d", count);
-    box_fill8(buf_win, 160, COL8_C6C6C6, 40, 28, 119, 43);
-    put_fonts8_asc(buf_win, 160, 40, 28, COL8_000000, s);
-
-    sheet_refresh(sht_win, 40, 28, 120, 44);
+    sprintf(s, "%d", timerctl.count);
+		box_fill8(buf_win, 160, COL8_C6C6C6, 40, 28, 119, 43);
+		put_fonts8_asc(buf_win, 160, 40, 28, COL8_000000, s);
+		sheet_refresh(sht_win, 40, 28, 120, 44);
 
     io_cli();
     if (fifo8_status(&keyfifo) + fifo8_status(&mousefifo) == 0) {
-      io_stihlt();
+      io_sti();
     } else {
       if (fifo8_status(&keyfifo)) {
         data = (unsigned char)fifo8_get(&keyfifo);
