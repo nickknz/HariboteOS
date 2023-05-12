@@ -9,7 +9,21 @@ This project aims for learning Operating System using the book《30天自制操�
 - Header files are split, making the structure clearer
 - Supports Chinese keyboard input.
 
-## Memory Location
+## The flow to boot HariboteOS
+1. Start BIOS.
+2. BIOS reads the first 1 sector(512 bytes), which is called IPL(initial boot loader), from a floppy disk into the memory 0x7c00.
+3. [ipl.asm] IPL reads 10 cylinders from a floppy disk into the memory 0x8200.
+4. [nasmhead.asm] OS prepares boot(setting an image mode, enabling memory access more than 1MB, moving 32 bits mode, etc.)
+5. [nasmhead.asm] Execute the segment on bootpack.
+6. [bootpack.c and other c files] Execute haribote OS.
+
+## Memory Map
+### For ipl.asm
+| Memory Range            | Description                                                           | Size     |
+| ------------------------| --------------------------------------------------------------------- | -------- |
+| 0x00007c00 - 0x00007dff | IPL. The first 1 sector of a floopy disk. This is the boot sector.    | 512 Bytes|
+| 0x00008200 - 0x000083ff | The content of a floopy disk(10 cylinders. Except IPL.)               | 10 Cyls  |
+
 | Memory Range            | Description                                     | Size     |
 | ------------------------| ----------------------------------------------- | -------- |
 | 0x00000000 - 0x000fffff | Used during boot, becomes empty afterwards      | 1 MB     |
