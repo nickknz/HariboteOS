@@ -93,7 +93,7 @@ set_gatedesc(idt + 0x2c, (int)asm_int_handler2c, 2 * 8, AR_INTGATE32);
 - [X] day 9：Memory Management
 - [X] day 10：Processing overlap
 - [X] day 11：Improve refresh Algorithm
-- [ ] day 12：Timer1
+- [X] day 12：Timer1
 - [ ] day 13：Timer2
 - [ ] 第14天：键盘输入
 - [ ] 第15天：多任务1
