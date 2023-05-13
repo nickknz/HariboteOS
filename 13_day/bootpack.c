@@ -95,25 +95,20 @@ int main(void) {
 
   for (;;) {
     sprintf(s, "%d", timerctl.count);
-    box_fill8(buf_win, 160, COL8_C6C6C6, 40, 28, 119, 43);
-    put_fonts8_asc(buf_win, 160, 40, 28, COL8_000000, s);
-
-    sheet_refresh(sht_win, 40, 28, 120, 44);
+    put_fonts8_asc_sht(sht_win, 40, 28, COL8_000000, COL8_C6C6C6, s, 10);
 
     io_cli();
     if (fifo8_status(&keyfifo) + fifo8_status(&mousefifo) +
             fifo8_status(&timerfifo) + fifo8_status(&timerfifo2) +
             fifo8_status(&timerfifo3) == 0) {
-      io_stihlt();
+      io_sti();
     } else {
       if (fifo8_status(&keyfifo)) {
         data = (unsigned char)fifo8_get(&keyfifo);
 
         io_sti();
-        sprintf(s, "%02X", data);
-        box_fill8(buf_back, binfo->scrnx, COL8_008484, 0, 16, 15, 31);
-        put_fonts8_asc(buf_back, binfo->scrnx, 0, 16, COL8_FFFFFF, s);
-        sheet_refresh(sht_back, 0, 16, 16, 32);
+        sprintf(s, "%X", data);
+        put_fonts8_asc_sht(sht_back, 0, 16, COL8_FFFFFF, COL8_008484, s, 2);
       } else if (fifo8_status(&mousefifo)) {
         data = (unsigned char)fifo8_get(&mousefifo);
 
@@ -134,10 +129,7 @@ int main(void) {
             s[2] = 'C';
           }
 
-          box_fill8(buf_back, binfo->scrnx, COL8_008484, 32, 16,
-                    32 + 15 * 8 - 1, 31);
-          put_fonts8_asc(buf_back, binfo->scrnx, 32, 16, COL8_FFFFFF, s);
-          sheet_refresh(sht_back, 32, 16, 32 + 15 * 8, 32);
+          put_fonts8_asc_sht(sht_back, 32, 16, COL8_FFFFFF, COL8_008484, s, 15);
 
           // 移动光标
           mx += mdec.x;
@@ -157,23 +149,17 @@ int main(void) {
           }
 
           sprintf(s, "(%d, %d)", mx, my);
-          box_fill8(buf_back, binfo->scrnx, COL8_008484, 0, 0, 79,
-                    15); // 隐藏坐标
-          put_fonts8_asc(buf_back, binfo->scrnx, 0, 0, COL8_FFFFFF,
-                         s); // 显示坐标
-          sheet_refresh(sht_back, 0, 0, 80, 16);
+          put_fonts8_asc_sht(sht_back, 0, 0, COL8_FFFFFF, COL8_008484, s, 10);
           sheet_slide(sht_mouse, mx, my);
         }
       } else if (fifo8_status(&timerfifo)) {
         data = fifo8_get(&timerfifo);
         io_sti();
-        put_fonts8_asc(buf_back, binfo->scrnx, 0, 64, COL8_FFFFFF, "10[sec]");
-        sheet_refresh(sht_back, 0, 64, 56, 80);
+        put_fonts8_asc_sht(sht_back, 0, 64, COL8_FFFFFF, COL8_008484, "10[sec]", 7);
       } else if (fifo8_status(&timerfifo2)) {
         data = fifo8_get(&timerfifo2);
         io_sti();
-        put_fonts8_asc(buf_back, binfo->scrnx, 0, 80, COL8_FFFFFF, "3[sec]");
-        sheet_refresh(sht_back, 0, 64, 48, 96);
+        put_fonts8_asc_sht(sht_back, 0, 80, COL8_FFFFFF, COL8_008484, "3[sec]", 6);
       } else if (fifo8_status(&timerfifo3)) {
         data = fifo8_get(&timerfifo3);
         io_sti();

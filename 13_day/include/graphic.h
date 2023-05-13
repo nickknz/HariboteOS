@@ -1,3 +1,5 @@
+#include "sheet.h"
+
 #ifndef _GRAPHIC_H_
 #define _GRAPHIC_H_
 
@@ -26,5 +28,6 @@ void put_font8(unsigned char *vram, int xsize, int x, int y, char c, char *font)
 void put_fonts8_asc(unsigned char *vram, int xsize, int x, int y, char c, char *s);
 void init_mouse_cursor8(unsigned char *mouse, char bc);
 void put_block8_8(unsigned char *vram, int vxsize, int pxsize, int pysize, int px0, int py0, char *buf, int bxsize);
+void put_fonts8_asc_sht(struct Sheet *sht, int x, int y, int c, int b, char *s,int l);
 
 #endif // _GRAPHIC_H_

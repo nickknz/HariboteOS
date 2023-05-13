@@ -1,5 +1,6 @@
 #include "graphic.h"
 #include "io.h"
+#include "sheet.h"
 
 void init_palette(void) {
   static unsigned char table_rgb[16 * 3] = {
@@ -157,4 +158,10 @@ void put_block8_8(unsigned char *vram, int vxsize, int pxsize, int pysize,
       vram[(py0 + y) * vxsize + (px0 + x)] = buf[y * bxsize + x];
     }
   }
+}
+
+void put_fonts8_asc_sht(struct Sheet *sht, int x, int y, int c, int b, char *s, int l) {
+  box_fill8(sht->buf, sht->bxsize, b, x, y, x + l * 8 - 1, y + 15);
+  put_fonts8_asc(sht->buf, sht->bxsize, x, y, c, s);
+  sheet_refresh(sht, x, y, x + l * 8, y + 16);
 }
