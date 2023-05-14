@@ -1,23 +1,33 @@
-#include "fifo.h"
 #include "keyboard.h"
+#include "fifo.h"
+#include "int.h"
 #include "io.h"
 
-struct FIFO8 keyfifo;
-unsigned char keybuf[KEY_FIFO_BUF_SIZE];
+struct FIFO32 *keyfifo;
+int keydata0;
 
 void wait_KBC_sendready(void) {
-    /* 等待键盘控制电路准备完毕 */
-    for (;;) {
-        if ((io_in8(PORT_KEYSTA) & KEYSTA_SEND_NOTREADY) == 0) {
-            break;
-        }
+  for (;;) {
+    if ((io_in8(PORT_KEYSTA) & KEYSTA_SEND_NOTREADY) == 0) {
+      break;
     }
+  }
 }
 
-// init KBC (Keyboard Controller)
-void init_keyboard(void) {
-    wait_KBC_sendready();
-    io_out8(PORT_KEYCMD, KEYCMD_WRITE_MODE);
-    wait_KBC_sendready();
-    io_out8(PORT_KEYDAT, KBC_MODE);
+void init_keyboard(struct FIFO32 *fifo, int data0) {
+  keyfifo = fifo;
+  keydata0 = data0;
+
+  wait_KBC_sendready();
+  io_out8(PORT_KEYCMD, KEYCMD_WRITE_MODE);
+  wait_KBC_sendready();
+  io_out8(PORT_KEYDAT, KBC_MODE);
+}
+
+/* 来自PS/2键盘的中断 */
+void int_handler21(int *esp) {
+  io_out8(PIC0_OCW2, 0x61); // 通知PIC IRQ-1的受理已经完成
+  int data = io_in8(PORT_KEYDAT);
+
+  fifo32_put(keyfifo, data + keydata0);
 }
