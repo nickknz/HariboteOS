@@ -94,13 +94,13 @@ set_gatedesc(idt + 0x2c, (int)asm_int_handler2c, 2 * 8, AR_INTGATE32);
 - [X] day 10：Processing overlap
 - [X] day 11：Improve refresh Algorithm
 - [X] day 12：Timer1
-- [ ] day 13：Timer2
-- [ ] 第14天：键盘输入
-- [ ] 第15天：多任务1
-- [ ] 第16天：多任务2
-- [ ] 第17天：命令行窗口
-- [ ] 第18天：命令行命令
-- [ ] 第19天：应用程序
+- [X] day 13：Timer2
+- [ ] day 14：Keyboard Input
+- [ ] day 15：Multi-task 1
+- [ ] day 16：Multi-task 2
+- [ ] day 17：命令行窗口
+- [ ] day 18：命令行命令
+- [ ] day 19：应用程序
 - [ ] 第20天：API
 - [ ] 第21天：保护操作系统
 - [ ] 第22天：C语言应用程序（修改为ELF格式）
