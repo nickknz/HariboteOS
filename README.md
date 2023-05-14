@@ -81,6 +81,11 @@ set_gatedesc(idt + 0x21, (int)asm_int_handler21, 2 * 8, AR_INTGATE32);
 // Set mouse interrupt handler
 set_gatedesc(idt + 0x2c, (int)asm_int_handler2c, 2 * 8, AR_INTGATE32);
 ```
+
+## Bug I have met
+1. When I use **unsigned char** variable data to receive the return value int from fifo32_get(&fifo), an **overflow** occur 
+because the range of values that can be stored in a char is -128 to 127 for a **signed char**, or 0 to 255 for an 
+**unsigned char**.
 ## Project progress
 - [X] day 1：Hello world
 - [X] day 2：assembly and Makefile
