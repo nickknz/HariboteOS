@@ -13,8 +13,8 @@ This project aims for learning Operating System using the book《30天自制操�
 1. Start BIOS.
 2. BIOS reads the first 1 sector(512 bytes), which is called IPL(initial boot loader), from a floppy disk into the memory 0x7c00.
 3. [ipl.asm] IPL reads 10 cylinders from a floppy disk into the memory 0x8200.
-4. [nasmhead.asm] OS prepares boot(setting an image mode, enabling memory access more than 1MB, moving 32 bits mode, etc.)
-5. [nasmhead.asm] Execute the segment on bootpack.
+4. [asmhead.asm] OS prepares boot(setting an image mode, enabling memory access more than 1MB, moving 32 bits mode, etc.)
+5. [asmhead.asm] Execute the segment on bootpack.
 6. [bootpack.c and other c files] Execute haribote OS.
 
 ## Memory Map
