@@ -244,6 +244,7 @@ void init_gdtidt(void) {
   struct SegmentDescriptor *gdt = (struct SegmentDescriptor *)0x00270000;
   struct GateDescriptor *idt = (struct GateDescriptor *)0x0026f800;
 
+  // initialize GDT
   for (int i = 0; i < 8192; i++) {
     set_segmdesc(gdt + i, 0, 0, 0);
   }
@@ -252,6 +253,7 @@ void init_gdtidt(void) {
   set_segmdesc(gdt + 2, 0x0007ffff, 0x00280000, 0x409a);    // prepare for bootpack.bin
   load_gdtr(0xffff, 0x00270000);
 
+  // initialize IDT
   for (int i = 0; i < 256; i++) {
     set_gatedesc(idt + i, 0, 0, 0);
   }
