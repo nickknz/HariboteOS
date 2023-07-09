@@ -34,6 +34,7 @@ void int_handler21(int *esp) {
     }
 }
 
+// 来自鼠标的中断
 void int_handler2c(int *esp) {
   struct BootInfo *binfo = (struct BootInfo *) ADR_BOOTINFO;
 
