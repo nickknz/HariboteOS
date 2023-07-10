@@ -29,7 +29,7 @@ void init_pic(void) {
 
 /* 来自PS/2键盘的中断 */
 void int_handler21(int *esp) {
-  io_out8(PIC0_OCW2, 0x61); // 通知PIC IRQ-1的受理已经完成
+  io_out8(PIC0_OCW2, 0x61); // 通知PIC IRQ-1的受理已经完成, PIC won't monitor keyboard without this line.
   unsigned char data = io_in8(PORT_KEYDAT);
 
   fifo8_put(&keyfifo, data);
