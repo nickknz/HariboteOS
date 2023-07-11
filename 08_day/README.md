@@ -59,7 +59,7 @@ The second part is transfering to 32-bit mode.
 We got into "protected virtual address mode" after getting into protected 32-bit mode from 16-bit mode. The old 16-bit mode was using real mode, it used real address or physical address. But the protected 32-bit mode uses virtual address. We can also call the protected mode as user mode.
 
 ## initialize GDT0 in asmhead.asm
-```
+``` assembly
 GDT0:
   RESB  8                 ; 初始值
   DW    0xffff, 0x0000, 0x9200, 0x00cf  ; 可写的32位段寄存器
