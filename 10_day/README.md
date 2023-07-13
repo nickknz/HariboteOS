@@ -14,3 +14,5 @@ struct Shtctl {
 ``` 
 
 ![Image 2023-07-12 at 7 52 PM](https://github.com/Nick-zhen/HariboteOS/assets/62523802/1218b31f-ff54-4bec-bcbf-717c718ef506)
+
+Currently, we only refresh the overlapping sheets
