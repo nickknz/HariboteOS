@@ -23,7 +23,7 @@ This project aims for learning Operating System using the book《30天自制操�
 | ------------------------| --------------------------------------------------------------------- | -------- |
 | 0x00007c00 - 0x00007dff | IPL. The first 1 sector of a floopy disk. This is the boot sector.    | 512 Bytes|
 | 0x00008200 - 0x000083ff | The content of a floopy disk(10 cylinders. Except IPL.)               | 10 Cyls  |
-### After bootpack.c
+### After asmhead.asm
 | Memory Range            | Description                                     | Size     |
 | ------------------------| ----------------------------------------------- | -------- |
 | 0x00000000 - 0x000fffff | Used during boot, becomes empty afterwards      | 1 MB     |
