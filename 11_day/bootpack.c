@@ -84,7 +84,7 @@ int main(void) {
 
     io_cli();
     if (fifo8_status(&keyfifo) + fifo8_status(&mousefifo) == 0) {
-      io_stihlt();
+      io_sti();
     } else {
       if (fifo8_status(&keyfifo)) {
         data = (unsigned char)fifo8_get(&keyfifo);
