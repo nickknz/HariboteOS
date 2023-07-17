@@ -174,7 +174,7 @@ int main(void) {
         io_sti();
         put_fonts8_asc(buf_back, binfo->scrnx, 0, 80, COL8_FFFFFF, "3[sec]");
         sheet_refresh(sht_back, 0, 64, 48, 96);
-      } else if (fifo8_status(&timerfifo3)) {
+      } else if (fifo8_status(&timerfifo3)) { //  模拟光标
         data = fifo8_get(&timerfifo3);
         io_sti();
         if (data) {
