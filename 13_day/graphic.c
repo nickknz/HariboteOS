@@ -160,6 +160,7 @@ void put_block8_8(unsigned char *vram, int vxsize, int pxsize, int pysize,
   }
 }
 
+// x,y 显示位置的坐标。c 字符颜色。 b 背景颜色。 s 字符串。 l 字符串长度
 void put_fonts8_asc_sht(struct Sheet *sht, int x, int y, int c, int b, char *s, int l) {
   box_fill8(sht->buf, sht->bxsize, b, x, y, x + l * 8 - 1, y + 15);
   put_fonts8_asc(sht->buf, sht->bxsize, x, y, c, s);

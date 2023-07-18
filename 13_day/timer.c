@@ -55,6 +55,7 @@ void timer_set_timer(struct Timer *timer, unsigned int timeout) {
 
   t = timerctl.t0;
   if (timer->timeout <= t->timeout) {
+    /* 插入最前面的情况 */
     timerctl.t0 = timer;
     timer->next = t;
     timerctl.next = timer->timeout;
