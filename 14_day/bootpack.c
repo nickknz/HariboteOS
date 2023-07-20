@@ -90,9 +90,6 @@ int main(void) {
   sheet_refresh(sht_back, 0, 0, binfo->scrnx, 48);
 
   for (;;) {
-    sprintf(s, "%d", timerctl.count);
-    put_fonts8_asc_sht(sht_win, 40, 28, COL8_000000, COL8_C6C6C6, s, 10);
-
     io_cli();
     if (fifo32_status(&fifo) == 0) {
       io_stihlt();
@@ -103,6 +100,9 @@ int main(void) {
       if (256 <= data && data <= 511) { /* 键盘数据*/
         sprintf(s, "%X", data - 256);
         put_fonts8_asc_sht(sht_back, 0, 16, COL8_FFFFFF, COL8_008484, s, 2);
+        if (data == 0x1e + 256) {
+          put_fonts8_asc_sht(sht_win, 40, 28, COL8_000000, COL8_C6C6C6, "A", 1);
+        }
       } else if (512 <= data && data <= 767) { /* 鼠标数据*/
         if (mouse_decode(&mdec, data - 512) != 0) {
           /* 已经收集了3字节的数据，所以显示出来 */
