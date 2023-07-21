@@ -13,6 +13,22 @@
 #include "timer.h"
 #include "window.h"
 
+
+void make_textbox8(struct Sheet *sht, int x0, int y0, int sx, int sy, int c)
+{
+    int x1 = x0 + sx, y1 = y0 + sy;
+    box_fill8(sht->buf, sht->bxsize, COL8_848484, x0 - 2, y0 - 3, x1 + 1, y0 - 3);
+    box_fill8(sht->buf, sht->bxsize, COL8_848484, x0 - 3, y0 - 3, x0 - 3, y1 + 1);
+    box_fill8(sht->buf, sht->bxsize, COL8_FFFFFF, x0 - 3, y1 + 2, x1 + 1, y1 + 2);
+    box_fill8(sht->buf, sht->bxsize, COL8_FFFFFF, x1 + 2, y0 - 3, x1 + 2, y1 + 2);
+    box_fill8(sht->buf, sht->bxsize, COL8_000000, x0 - 1, y0 - 2, x1 + 0, y0 - 2);
+    box_fill8(sht->buf, sht->bxsize, COL8_000000, x0 - 2, y0 - 2, x0 - 2, y1 + 0);
+    box_fill8(sht->buf, sht->bxsize, COL8_C6C6C6, x0 - 2, y1 + 1, x1 + 0, y1 + 1);
+    box_fill8(sht->buf, sht->bxsize, COL8_C6C6C6, x1 + 1, y0 - 2, x1 + 1, y1 + 1);
+    box_fill8(sht->buf, sht->bxsize, c, x0-1,y0-1,x1+0,y1+0);
+    return; 
+}
+
 int main(void) {
   struct BootInfo *binfo = (struct BootInfo *)ADR_BOOTINFO;
   struct MemMan *memman = (struct MemMan *)MEMMAN_ADDR;
@@ -73,7 +89,7 @@ int main(void) {
   sheet_setbuf(sht_win, buf_win, 160, 52, -1);    // 没有透明色
   init_screen8(buf_back, binfo->scrnx, binfo->scrny);
   init_mouse_cursor8(buf_mouse, 99); // 背景色号99
-  make_window8(buf_win, 160, 52, "counter");
+  make_window8(buf_win, 160, 52, "window");
   sheet_slide(sht_back, 0, 0);
   int mx = (binfo->scrnx - 16) / 2; // 按在画面中央来计算坐标
   int my = (binfo->scrny - 28 - 16) / 2;
@@ -89,6 +105,11 @@ int main(void) {
   put_fonts8_asc(buf_back, binfo->scrnx, 0, 32, COL8_FFFFFF, s);
   sheet_refresh(sht_back, 0, 0, binfo->scrnx, 48);
 
+  int cursor_x, cursor_c;
+  make_textbox8(sht_win, 8, 28, 144, 16, COL8_FFFFFF);
+  cursor_x = 8;
+  cursor_c = COL8_FFFFFF;
+
   for (;;) {
     io_cli();
     if (fifo32_status(&fifo) == 0) {
@@ -100,9 +121,23 @@ int main(void) {
       if (256 <= data && data <= 511) { /* 键盘数据*/
         sprintf(s, "%X", data - 256);
         put_fonts8_asc_sht(sht_back, 0, 16, COL8_FFFFFF, COL8_008484, s, 2);
-        if (data == 0x1e + 256) {
-          put_fonts8_asc_sht(sht_win, 40, 28, COL8_000000, COL8_C6C6C6, "A", 1);
+        if (data < 0x54 + 256 ) {
+          if (keytable[data - 256] != 0 && cursor_x < 144) { /* 一般字符 */
+            /* 显示1个字符就前移1次光标 */
+            s[0] = keytable[data - 256];
+            s[1] = 0;
+            put_fonts8_asc_sht(sht_win, cursor_x, 28, COL8_000000, COL8_FFFFFF, s, 1); 
+            cursor_x += 8;
+          }
         }
+        if (data==256+0x0e && cursor_x>8) {/*退格键 */ 
+          /* 用空格键把光标消去后，后移1次光标 */
+          put_fonts8_asc_sht(sht_win, cursor_x, 28, COL8_000000, COL8_FFFFFF, " ", 1);
+          cursor_x -= 8;
+        }
+        /* 光标再显示 */
+        box_fill8(sht_win->buf,sht_win->bxsize, cursor_c, cursor_x, 28, cursor_x + 7, 43);
+        sheet_refresh(sht_win, cursor_x, 28, cursor_x + 8, 44);
       } else if (512 <= data && data <= 767) { /* 鼠标数据*/
         if (mouse_decode(&mdec, data - 512) != 0) {
           /* 已经收集了3字节的数据，所以显示出来 */
@@ -147,17 +182,18 @@ int main(void) {
         put_fonts8_asc_sht(sht_back, 0, 64, COL8_FFFFFF, COL8_008484, "10[sec]", 7);
       } else if (data == 3) { /* 3秒定时器 */
         put_fonts8_asc_sht(sht_back, 0, 80, COL8_FFFFFF, COL8_008484, "3[sec]", 6);
-      } else if (data == 1) { /* 光标用定时器*/
-        timer_init(timer3, &fifo, 0);
-        box_fill8(buf_back, binfo->scrnx, COL8_FFFFFF, 8, 96, 15, 111);
+      } else if (data <= 1) { /* 光标用定时器*/
+        if (data == 1) {
+          timer_init(timer3, &fifo, 0);
+          cursor_c = COL8_000000;
+        } else {
+          timer_init(timer3, &fifo, 1);
+          cursor_c = COL8_FFFFFF;
+        }
         timer_set_timer(timer3, 50);
-        sheet_refresh(sht_back, 8, 96, 16, 112);
-      } else if (data == 0) {
-        timer_init(timer3, &fifo, 1);
-        box_fill8(buf_back, binfo->scrnx, COL8_008484, 8, 96, 15, 111);
-        timer_set_timer(timer3, 50);
-        sheet_refresh(sht_back, 8, 96, 16, 112);
-      }
+        box_fill8(sht_win->buf, sht_win->bxsize, cursor_c, cursor_x, 28, cursor_x + 7, 43);
+        sheet_refresh(sht_win, cursor_x, 28, cursor_x + 8, 44);
+      } 
     }
   }
 
