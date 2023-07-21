@@ -102,13 +102,13 @@ because the range of values that can be stored in a char is -128 to 127 for a **
 - [X] day 11：Improve refresh Algorithm
 - [X] day 12：Timer1
 - [X] day 13：Timer2
-- [ ] day 14：Keyboard Input
+- [X] day 14：Keyboard Input
 - [ ] day 15：Multi-task 1
 - [ ] day 16：Multi-task 2
 - [ ] day 17：命令行窗口
 - [ ] day 18：命令行命令
 - [ ] day 19：应用程序
-- [ ] 第20天：API
+- [ ] day 20：API
 - [ ] 第21天：保护操作系统
 - [ ] 第22天：C语言应用程序（修改为ELF格式）
 - [ ] 第23天：应用程序图形处理
