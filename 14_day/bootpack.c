@@ -14,21 +14,6 @@
 #include "window.h"
 
 
-void make_textbox8(struct Sheet *sht, int x0, int y0, int sx, int sy, int c)
-{
-    int x1 = x0 + sx, y1 = y0 + sy;
-    box_fill8(sht->buf, sht->bxsize, COL8_848484, x0 - 2, y0 - 3, x1 + 1, y0 - 3);
-    box_fill8(sht->buf, sht->bxsize, COL8_848484, x0 - 3, y0 - 3, x0 - 3, y1 + 1);
-    box_fill8(sht->buf, sht->bxsize, COL8_FFFFFF, x0 - 3, y1 + 2, x1 + 1, y1 + 2);
-    box_fill8(sht->buf, sht->bxsize, COL8_FFFFFF, x1 + 2, y0 - 3, x1 + 2, y1 + 2);
-    box_fill8(sht->buf, sht->bxsize, COL8_000000, x0 - 1, y0 - 2, x1 + 0, y0 - 2);
-    box_fill8(sht->buf, sht->bxsize, COL8_000000, x0 - 2, y0 - 2, x0 - 2, y1 + 0);
-    box_fill8(sht->buf, sht->bxsize, COL8_C6C6C6, x0 - 2, y1 + 1, x1 + 0, y1 + 1);
-    box_fill8(sht->buf, sht->bxsize, COL8_C6C6C6, x1 + 1, y0 - 2, x1 + 1, y1 + 1);
-    box_fill8(sht->buf, sht->bxsize, c, x0-1,y0-1,x1+0,y1+0);
-    return; 
-}
-
 int main(void) {
   struct BootInfo *binfo = (struct BootInfo *)ADR_BOOTINFO;
   struct MemMan *memman = (struct MemMan *)MEMMAN_ADDR;
@@ -72,7 +57,7 @@ int main(void) {
   memman_init(memman);
   // 书中为0x00001000 ~ 0x0009e000
   // 测试时发现会造成错误（原因未知），所以改为由0x00010000开始
-  memman_free(memman, 0x00010000, 0x0009e000); // 0x00010000 ~ 0x0009efff
+  memman_free(memman, 0x0001000, 0x0009e000); // 0x00010000 ~ 0x0009efff
   memman_free(memman, 0x00400000, memtotal - 0x00400000);
 
   init_palette();
@@ -90,6 +75,10 @@ int main(void) {
   init_screen8(buf_back, binfo->scrnx, binfo->scrny);
   init_mouse_cursor8(buf_mouse, 99); // 背景色号99
   make_window8(buf_win, 160, 52, "window");
+  int cursor_x, cursor_c;
+  make_textbox8(sht_win, 8, 28, 144, 16, COL8_FFFFFF);
+  cursor_x = 8;
+  cursor_c = COL8_FFFFFF;
   sheet_slide(sht_back, 0, 0);
   int mx = (binfo->scrnx - 16) / 2; // 按在画面中央来计算坐标
   int my = (binfo->scrny - 28 - 16) / 2;
@@ -104,11 +93,6 @@ int main(void) {
           memman_total(memman) / 1024);
   put_fonts8_asc(buf_back, binfo->scrnx, 0, 32, COL8_FFFFFF, s);
   sheet_refresh(sht_back, 0, 0, binfo->scrnx, 48);
-
-  int cursor_x, cursor_c;
-  make_textbox8(sht_win, 8, 28, 144, 16, COL8_FFFFFF);
-  cursor_x = 8;
-  cursor_c = COL8_FFFFFF;
 
   for (;;) {
     io_cli();
@@ -177,6 +161,12 @@ int main(void) {
           sprintf(s, "(%d, %d)", mx, my);
           put_fonts8_asc_sht(sht_back, 0, 0, COL8_FFFFFF, COL8_008484, s, 10);
           sheet_slide(sht_mouse, mx, my);
+
+          sheet_slide(sht_mouse, mx, my);
+          if ((mdec.btn & 0x01) != 0) {
+            /* 按下左键、移动sht_win */ 
+            sheet_slide(sht_win, mx - 80, my - 8);
+          }
         }
       } else if (data == 10) { /* 10秒定时器 */
         put_fonts8_asc_sht(sht_back, 0, 64, COL8_FFFFFF, COL8_008484, "10[sec]", 7);
