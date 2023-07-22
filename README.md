@@ -109,7 +109,7 @@ because the range of values that can be stored in a char is -128 to 127 for a **
 - [ ] day 18：命令行命令
 - [ ] day 19：应用程序
 - [ ] day 20：API
-- [ ] 第21天：保护操作系统
+- [ ] day 21：保护操作系统
 - [ ] 第22天：C语言应用程序（修改为ELF格式）
 - [ ] 第23天：应用程序图形处理
 - [ ] 第24天：窗口操作
