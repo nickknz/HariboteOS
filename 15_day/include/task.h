@@ -1,5 +1,10 @@
+// #include "timer.h"
+
 #ifndef _TASK_H_
 #define _TASK_H_
+
+// extern struct Timer *mt_timer;
+// extern int mt_tr;
 
 // task status segment (TTS)
 struct TSS32 {
@@ -13,5 +18,13 @@ struct TSS32 {
     // 与任务设置相关的信息
     int ldtr, iomap;
 };
+
+void load_tr(int tr);
+void taskswitch4(void);
+
+// void far_jmp(int eip, int cs);
+
+// void mt_init(void);
+// void mt_task_switch(void);
 
 #endif // _TASK_H_
