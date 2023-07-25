@@ -21,6 +21,8 @@ struct TSS32 {
 
 void load_tr(int tr);
 void taskswitch4(void);
+void taskswitch3(void);
+
 
 // void far_jmp(int eip, int cs);
 

@@ -12,7 +12,13 @@
 #include "sheet.h"
 #include "timer.h"
 #include "window.h"
+#include "task.h"
 
+// new start
+
+#define AR_TSS32 0x0089
+void task_b_main(void);
+// new end
 
 int main(void) {
   struct BootInfo *binfo = (struct BootInfo *)ADR_BOOTINFO;
@@ -94,6 +100,38 @@ int main(void) {
   put_fonts8_asc(buf_back, binfo->scrnx, 0, 32, COL8_FFFFFF, s);
   sheet_refresh(sht_back, 0, 0, binfo->scrnx, 48);
 
+  // new start
+  struct TSS32 tss_a, tss_b;
+  tss_a.ldtr = 0;
+  tss_a.iomap = 0x40000000;
+  tss_b.ldtr = 0;
+  tss_b.iomap = 0x40000000;
+
+  struct SegmentDescriptor *gdt = (struct SegmentDescriptor *) ADR_GDT;
+  set_segmdesc(gdt + 3, 103, (int) &tss_a, AR_TSS32);
+  set_segmdesc(gdt + 4, 103, (int) &tss_b, AR_TSS32);
+  load_tr(3*8);
+  int task_b_esp = memman_alloc_4k(memman, 64 * 1024) + 64 * 1024;
+
+  tss_b.eip = (int) &task_b_main;
+  tss_b.eflags = 0x00000202; /* IF = 1; */
+  tss_b.eax = 0;
+  tss_b.ecx = 0;
+  tss_b.edx = 0;
+  tss_b.ebx = 0;
+  tss_b.esp = task_b_esp;
+  tss_b.ebp = 0;
+  tss_b.esi = 0;
+  tss_b.edi = 0;
+  tss_b.es = 1 * 8;
+  tss_b.cs = 2 * 8;
+  tss_b.ss = 1 * 8;
+  tss_b.ds = 1 * 8;
+  tss_b.fs = 1 * 8;
+  tss_b.gs = 1 * 8;
+
+  // new end
+
   for (;;) {
     io_cli();
     if (fifo32_status(&fifo) == 0) {
@@ -170,6 +208,11 @@ int main(void) {
         }
       } else if (data == 10) { /* 10秒定时器 */
         put_fonts8_asc_sht(sht_back, 0, 64, COL8_FFFFFF, COL8_008484, "10[sec]", 7);
+        // new start
+
+        taskswitch4();
+        // new end
+
       } else if (data == 3) { /* 3秒定时器 */
         put_fonts8_asc_sht(sht_back, 0, 80, COL8_FFFFFF, COL8_008484, "3[sec]", 6);
       } else if (data <= 1) { /* 光标用定时器*/
@@ -189,3 +232,31 @@ int main(void) {
 
   return 0;
 }
+// new start
+
+
+void task_b_main(void)
+{
+  struct FIFO32 fifo;
+  struct Timer *timer;
+  int i, fifobuf[128];
+
+  fifo32_init(&fifo, 128, fifobuf);
+  timer = timer_alloc();
+  timer_init(timer, &fifo, 1);
+  timer_set_timer(timer, 500);
+
+  for (;;) {
+    io_cli();
+    if (fifo32_status(&fifo) == 0) {
+        io_stihlt();
+    } else {
+      i = fifo32_get(&fifo); 
+      io_sti();
+      if (i == 1) { /*超时时间为5秒 */
+        taskswitch3(); /*返回任务A */
+      } 
+    }
+  }
+}
+// new end
