@@ -130,6 +130,13 @@ int main(void) {
   tss_b.fs = 1 * 8;
   tss_b.gs = 1 * 8;
 
+
+  struct Timer* timer_ts = timer_alloc();
+  timer_init(timer_ts, &fifo, 2);
+  timer_set_timer(timer_ts, 2);
+
+  *((int *) 0x0fec) = (int) sht_back;
+
   // new end
 
   for (;;) {
@@ -139,8 +146,12 @@ int main(void) {
     } else {
       data = fifo32_get(&fifo);
       io_sti();
-
-      if (256 <= data && data <= 511) { /* 键盘数据*/
+      // new start
+      if (data == 2) {
+        far_jmp(0, 4*8);
+        timer_set_timer(timer_ts, 2);
+        // new end
+      } else if (256 <= data && data <= 511) { /* 键盘数据*/
         sprintf(s, "%X", data - 256);
         put_fonts8_asc_sht(sht_back, 0, 16, COL8_FFFFFF, COL8_008484, s, 2);
         if (data < 0x54 + 256 ) {
@@ -208,13 +219,14 @@ int main(void) {
         }
       } else if (data == 10) { /* 10秒定时器 */
         put_fonts8_asc_sht(sht_back, 0, 64, COL8_FFFFFF, COL8_008484, "10[sec]", 7);
+        
+
+      } else if (data == 3) { /* 3秒定时器 */
+        put_fonts8_asc_sht(sht_back, 0, 80, COL8_FFFFFF, COL8_008484, "3[sec]", 6);
         // new start
 
         taskswitch4();
         // new end
-
-      } else if (data == 3) { /* 3秒定时器 */
-        put_fonts8_asc_sht(sht_back, 0, 80, COL8_FFFFFF, COL8_008484, "3[sec]", 6);
       } else if (data <= 1) { /* 光标用定时器*/
         if (data == 1) {
           timer_init(timer3, &fifo, 0);
@@ -238,23 +250,29 @@ int main(void) {
 void task_b_main(void)
 {
   struct FIFO32 fifo;
-  struct Timer *timer;
-  int i, fifobuf[128];
+  struct Timer *timer_ts;
+  int i, fifobuf[128], count = 0;
+  char s[11];
+  struct Sheet *sht_back = (struct Sheet*) *((int*) 0xfec);
 
   fifo32_init(&fifo, 128, fifobuf);
-  timer = timer_alloc();
-  timer_init(timer, &fifo, 1);
-  timer_set_timer(timer, 500);
+  timer_ts = timer_alloc();
+  timer_init(timer_ts, &fifo, 1);
+  timer_set_timer(timer_ts, 2);
 
   for (;;) {
+    count++;
+    sprintf(s, "%d", count);
+    put_fonts8_asc_sht(sht_back, 0, 144, COL8_FFFFFF, COL8_008484, s, 10);
     io_cli();
     if (fifo32_status(&fifo) == 0) {
         io_stihlt();
     } else {
       i = fifo32_get(&fifo); 
       io_sti();
-      if (i == 1) { /*超时时间为5秒 */
-        taskswitch3(); /*返回任务A */
+      if (i == 1) { /* switch task */
+        far_jmp(0, 3*8);
+        timer_set_timer(timer_ts, 2);
       } 
     }
   }
