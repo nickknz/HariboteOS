@@ -3,8 +3,8 @@
 #ifndef _TASK_H_
 #define _TASK_H_
 
-// extern struct Timer *mt_timer;
-// extern int mt_tr;
+extern struct Timer *mt_timer;
+extern int mt_tr;
 
 // task status segment (TTS)
 struct TSS32 {
@@ -26,7 +26,7 @@ void taskswitch3(void);
 
 void far_jmp(int eip, int cs);
 
-// void mt_init(void);
-// void mt_task_switch(void);
+void mt_init(void);
+void mt_task_switch(void);
 
 #endif // _TASK_H_

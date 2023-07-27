@@ -15,8 +15,6 @@
 #include "task.h"
 
 // new start
-
-#define AR_TSS32 0x0089
 void task_b_main(struct Sheet *sht_back);
 // new end
 
@@ -131,12 +129,7 @@ int main(void) {
   tss_b.fs = 1 * 8;
   tss_b.gs = 1 * 8;
 
-
-  struct Timer* timer_ts = timer_alloc();
-  timer_init(timer_ts, &fifo, 2);
-  timer_set_timer(timer_ts, 6);
-
-  *((int *) 0x0fec) = (int) sht_back;
+  mt_init();
 
   // new end
 
@@ -147,12 +140,7 @@ int main(void) {
     } else {
       data = fifo32_get(&fifo);
       io_sti();
-      // new start
-      if (data == 2) {
-        far_jmp(0, 4*8);
-        timer_set_timer(timer_ts, 6);
-        // new end
-      } else if (256 <= data && data <= 511) { /* 键盘数据*/
+      if (256 <= data && data <= 511) { /* 键盘数据*/
         sprintf(s, "%X", data - 256);
         put_fonts8_asc_sht(sht_back, 0, 16, COL8_FFFFFF, COL8_008484, s, 2);
         if (data < 0x54 + 256 ) {
@@ -245,22 +233,22 @@ int main(void) {
 void task_b_main(struct Sheet *sht_back)
 {
   struct FIFO32 fifo;
-  struct Timer *timer_ts, *timer_put;
-  int i, fifobuf[128], count = 0;
+  struct Timer *timer_put, *timer_1s;
+  int i, fifobuf[128], count = 0, count0 = 0;
   char s[12];
 
   fifo32_init(&fifo, 128, fifobuf);
-  timer_ts = timer_alloc();
-  timer_init(timer_ts, &fifo, 2);
-  timer_set_timer(timer_ts, 2);
 
   timer_put = timer_alloc();
   timer_init(timer_put, &fifo, 1);
   timer_set_timer(timer_put, 1);
 
+  timer_1s = timer_alloc();
+  timer_init(timer_1s, &fifo, 100);
+  timer_set_timer(timer_1s, 100);
+
   for (;;) {
     count++;
-    
     io_cli();
     if (fifo32_status(&fifo) == 0) {
         io_stihlt();
@@ -271,9 +259,11 @@ void task_b_main(struct Sheet *sht_back)
         sprintf(s, "%d", count);
         put_fonts8_asc_sht(sht_back, 0, 144, COL8_FFFFFF, COL8_008484, s, 10);
         timer_set_timer(timer_put, 1);
-      } else if (i == 2) { /* switch task */
-        far_jmp(0, 3*8);
-        timer_set_timer(timer_ts, 2);
+      } else if (i == 100) {
+        sprintf(s, "%d", count - count0);
+        put_fonts8_asc_sht(sht_back, 0, 128, COL8_FFFFFF, COL8_008484, s, 11);
+        count0 = count;
+        timer_set_timer(timer_1s, 100);
       }
     }
   }
