@@ -17,7 +17,7 @@
 // new start
 
 #define AR_TSS32 0x0089
-void task_b_main(void);
+void task_b_main(struct Sheet *sht_back);
 // new end
 
 int main(void) {
@@ -32,7 +32,7 @@ int main(void) {
   unsigned char *buf_back, buf_mouse[256], *buf_win;
   struct Timer *timer, *timer2, *timer3;
   struct FIFO32 fifo;
-  int fifobuf[128], data;
+  int fifobuf[1024], data;
   
   init_gdtidt();
   init_pic(); // GDT/IDT完成初始化，开放CPU中断
@@ -111,7 +111,8 @@ int main(void) {
   set_segmdesc(gdt + 3, 103, (int) &tss_a, AR_TSS32);
   set_segmdesc(gdt + 4, 103, (int) &tss_b, AR_TSS32);
   load_tr(3*8);
-  int task_b_esp = memman_alloc_4k(memman, 64 * 1024) + 64 * 1024;
+  int task_b_esp = memman_alloc_4k(memman, 64 * 1024) + 64 * 1024 - 8;
+  *((int *) (task_b_esp + 4)) = (int) sht_back;
 
   tss_b.eip = (int) &task_b_main;
   tss_b.eflags = 0x00000202; /* IF = 1; */
@@ -133,7 +134,7 @@ int main(void) {
 
   struct Timer* timer_ts = timer_alloc();
   timer_init(timer_ts, &fifo, 2);
-  timer_set_timer(timer_ts, 2);
+  timer_set_timer(timer_ts, 6);
 
   *((int *) 0x0fec) = (int) sht_back;
 
@@ -149,7 +150,7 @@ int main(void) {
       // new start
       if (data == 2) {
         far_jmp(0, 4*8);
-        timer_set_timer(timer_ts, 2);
+        timer_set_timer(timer_ts, 6);
         // new end
       } else if (256 <= data && data <= 511) { /* 键盘数据*/
         sprintf(s, "%X", data - 256);
@@ -219,14 +220,8 @@ int main(void) {
         }
       } else if (data == 10) { /* 10秒定时器 */
         put_fonts8_asc_sht(sht_back, 0, 64, COL8_FFFFFF, COL8_008484, "10[sec]", 7);
-        
-
       } else if (data == 3) { /* 3秒定时器 */
         put_fonts8_asc_sht(sht_back, 0, 80, COL8_FFFFFF, COL8_008484, "3[sec]", 6);
-        // new start
-
-        taskswitch4();
-        // new end
       } else if (data <= 1) { /* 光标用定时器*/
         if (data == 1) {
           timer_init(timer3, &fifo, 0);
@@ -247,34 +242,41 @@ int main(void) {
 // new start
 
 
-void task_b_main(void)
+void task_b_main(struct Sheet *sht_back)
 {
   struct FIFO32 fifo;
-  struct Timer *timer_ts;
+  struct Timer *timer_ts, *timer_put;
   int i, fifobuf[128], count = 0;
-  char s[11];
-  struct Sheet *sht_back = (struct Sheet*) *((int*) 0xfec);
+  char s[12];
 
   fifo32_init(&fifo, 128, fifobuf);
   timer_ts = timer_alloc();
-  timer_init(timer_ts, &fifo, 1);
+  timer_init(timer_ts, &fifo, 2);
   timer_set_timer(timer_ts, 2);
+
+  timer_put = timer_alloc();
+  timer_init(timer_put, &fifo, 1);
+  timer_set_timer(timer_put, 1);
 
   for (;;) {
     count++;
-    sprintf(s, "%d", count);
-    put_fonts8_asc_sht(sht_back, 0, 144, COL8_FFFFFF, COL8_008484, s, 10);
+    
     io_cli();
     if (fifo32_status(&fifo) == 0) {
         io_stihlt();
     } else {
       i = fifo32_get(&fifo); 
       io_sti();
-      if (i == 1) { /* switch task */
+      if (i == 1) { 
+        sprintf(s, "%d", count);
+        put_fonts8_asc_sht(sht_back, 0, 144, COL8_FFFFFF, COL8_008484, s, 10);
+        timer_set_timer(timer_put, 1);
+      } else if (i == 2) { /* switch task */
         far_jmp(0, 3*8);
         timer_set_timer(timer_ts, 2);
-      } 
+      }
     }
   }
 }
+
 // new end
