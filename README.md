@@ -84,10 +84,14 @@ set_gatedesc(idt + 0x21, (int)asm_int_handler21, 2 * 8, AR_INTGATE32);
 set_gatedesc(idt + 0x2c, (int)asm_int_handler2c, 2 * 8, AR_INTGATE32);
 ```
 
-## Bug I have met
+## Bug I have met and fixed
 1. When I use **unsigned char** variable data to receive the return value int from fifo32_get(&fifo), an **overflow** occur 
 because the range of values that can be stored in a char is -128 to 127 for a **signed char**, or 0 to 255 for an 
 **unsigned char**.
+
+## The bug have not fixed
+1. In day 15, when we are using counter to test task switching (15.5 in textbook), the screen processing will be extremely slow if we are using io_sti instead of io_stihlt. 
+
 ## Project progress
 - [X] day 1：Hello world
 - [X] day 2：assembly and Makefile
