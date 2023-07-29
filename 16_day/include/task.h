@@ -10,8 +10,8 @@
 // #define MAX_TASKS_LV 100
 // #define MAX_TASKLEVELS 10
 
-extern struct Timer *mt_timer;
-extern int mt_tr;
+extern struct TaskCtl *taskctl;
+extern struct Timer *task_timer;
 
 // task status segment (TTS)
 struct TSS32 {
@@ -52,9 +52,6 @@ struct TaskCtl {
     struct Task tasks0[MAX_TASKS];
 };
 
-extern struct TaskCtl *taskctl;
-extern struct Timer *task_timer;
-
 void load_tr(int tr);
 void taskswitch4(void);
 void taskswitch3(void);
@@ -65,7 +62,9 @@ void mt_task_switch(void);
 
 struct Task *task_init(struct MemMan *memman);
 struct Task *task_alloc(void);
-void task_run(struct Task *task, int level, int priority);
+// void task_run(struct Task *task, int level, int priority);
+void task_run(struct Task *task);
+
 void task_switch(void);
 void task_sleep(struct Task *task);
 struct Task *task_now(void);

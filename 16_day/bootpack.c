@@ -60,8 +60,8 @@ int main(void) {
   memtotal = memtest(0x00400000, 0xbfffffff);
   memman_init(memman);
   // 书中为0x00001000 ~ 0x0009e000
-  // 测试时发现会造成错误（原因未知），所以改为由0x00010000开始
-  memman_free(memman, 0x0001000, 0x0009e000); // 0x00010000 ~ 0x0009efff
+  // 测试时发现会造成错误（原因未知）在day 16.1，所以改为由0x00010000开始
+  memman_free(memman, 0x00010000, 0x0009e000); // 0x00010000 ~ 0x0009efff
   memman_free(memman, 0x00400000, memtotal - 0x00400000);
 
   init_palette();
@@ -99,37 +99,20 @@ int main(void) {
   sheet_refresh(sht_back, 0, 0, binfo->scrnx, 48);
 
   // new start
-  struct TSS32 tss_a, tss_b;
-  tss_a.ldtr = 0;
-  tss_a.iomap = 0x40000000;
-  tss_b.ldtr = 0;
-  tss_b.iomap = 0x40000000;
+  struct Task *task_b;
 
-  struct SegmentDescriptor *gdt = (struct SegmentDescriptor *) ADR_GDT;
-  set_segmdesc(gdt + 3, 103, (int) &tss_a, AR_TSS32);
-  set_segmdesc(gdt + 4, 103, (int) &tss_b, AR_TSS32);
-  load_tr(3*8);
-  int task_b_esp = memman_alloc_4k(memman, 64 * 1024) + 64 * 1024 - 8;
-  *((int *) (task_b_esp + 4)) = (int) sht_back;
-
-  tss_b.eip = (int) &task_b_main;
-  tss_b.eflags = 0x00000202; /* IF = 1; */
-  tss_b.eax = 0;
-  tss_b.ecx = 0;
-  tss_b.edx = 0;
-  tss_b.ebx = 0;
-  tss_b.esp = task_b_esp;
-  tss_b.ebp = 0;
-  tss_b.esi = 0;
-  tss_b.edi = 0;
-  tss_b.es = 1 * 8;
-  tss_b.cs = 2 * 8;
-  tss_b.ss = 1 * 8;
-  tss_b.ds = 1 * 8;
-  tss_b.fs = 1 * 8;
-  tss_b.gs = 1 * 8;
-
-  mt_init();
+  task_init(memman);
+  task_b = task_alloc();
+  task_b->tss.esp = memman_alloc_4k(memman, 64 * 1024) + 64 * 1024 - 8;
+  task_b->tss.eip = (int) &task_b_main;
+  task_b->tss.es = 1 * 8;
+  task_b->tss.cs = 2 * 8;
+  task_b->tss.ss = 1 * 8;
+  task_b->tss.ds = 1 * 8;
+  task_b->tss.fs = 1 * 8;
+  task_b->tss.gs = 1 * 8;
+  *((int *) (task_b->tss.esp + 4)) = (int) sht_back;
+  task_run(task_b);
 
   // new end
 

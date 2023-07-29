@@ -97,7 +97,7 @@ void int_handler20(int *esp) {
     // 超时
     timer->flags = TIMER_FLAGS_ALLOC;
 
-    if (timer != mt_timer) {
+    if (timer != task_timer) {
       fifo32_put(timer->fifo, timer->data);
     } else {
       ts = 1;
@@ -110,6 +110,6 @@ void int_handler20(int *esp) {
   timerctl.next = timer->timeout;
 
   if (ts) {
-    mt_task_switch();
+    task_switch();
   }
 }

@@ -3,27 +3,6 @@
 #include "memory.h"
 #include "desctbl.h"
 
-struct Timer *mt_timer;
-int mt_tr;
-
-void mt_init(void) {
-  mt_timer = timer_alloc();
-  // 没有必要使用timer_init, 我们对int_handler20 function做了改动
-  timer_set_timer(mt_timer, 2);
-  mt_tr = 3 * 8;
-}
-
-void mt_task_switch(void) {
-  if (mt_tr == 3 * 8) {
-    mt_tr = 4 * 8;
-  } else {
-    mt_tr = 3 * 8;
-  }
-
-  timer_set_timer(mt_timer, 2);
-  far_jmp(0, mt_tr);
-}
-
 struct TaskCtl *taskctl;
 struct Timer *task_timer;
 
@@ -45,14 +24,14 @@ struct Task *task_init(struct MemMan *memman)
   taskctl->tasks[0] = task;
   load_tr(task->sel);
   task_timer = timer_alloc();
-  timer_settime(task_timer, 2);
+  timer_set_timer(task_timer, 2);
   return task;
 }
 
 struct Task *task_alloc(void)
 {
   int i;
-  struct TASK *task;
+  struct Task *task;
   for (i = 0; i < MAX_TASKS; i++) {
     if (taskctl->tasks0[i].flags == 0) {
       task = &taskctl->tasks0[i];
@@ -77,7 +56,7 @@ struct Task *task_alloc(void)
   return 0; /*全部正在使用*/
 }
 
-void task_run(struct TASK *task)
+void task_run(struct Task *task)
 {
   task->flags = 2; /*活动中标志*/
   taskctl->tasks[taskctl->running] = task;
@@ -87,13 +66,13 @@ void task_run(struct TASK *task)
 
 void task_switch(void)
 {
-  timer_settime(task_timer, 2);
+  timer_set_timer(task_timer, 2);
   if (taskctl->running >= 2) {
     taskctl->now++;
     if (taskctl->now == taskctl->running) {
       taskctl->now = 0;
     }
-    farjmp(0, taskctl->tasks[taskctl->now]->sel);
+    far_jmp(0, taskctl->tasks[taskctl->now]->sel);
   }
   return;
 }
