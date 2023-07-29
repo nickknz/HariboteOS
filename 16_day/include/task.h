@@ -52,6 +52,9 @@ struct TaskCtl {
     struct Task tasks0[MAX_TASKS];
 };
 
+extern struct TaskCtl *taskctl;
+extern struct Timer *task_timer;
+
 void load_tr(int tr);
 void taskswitch4(void);
 void taskswitch3(void);
