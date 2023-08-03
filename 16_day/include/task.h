@@ -28,7 +28,8 @@ struct TSS32 {
 
 struct Task {
   int sel, flags; // sel用于存放GDT的编号
-//   int level, priority;
+  // int level, priority;
+  int priority;
   struct TSS32 tss;
 };
 
@@ -63,7 +64,7 @@ void mt_task_switch(void);
 struct Task *task_init(struct MemMan *memman);
 struct Task *task_alloc(void);
 // void task_run(struct Task *task, int level, int priority);
-void task_run(struct Task *task);
+void task_run(struct Task *task, int priority);
 
 void task_switch(void);
 void task_sleep(struct Task *task);

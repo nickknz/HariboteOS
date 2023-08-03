@@ -19,12 +19,13 @@ struct Task *task_init(struct MemMan *memman)
   }
   task = task_alloc();
   task->flags = 2; /*活动中标志*/
+  task->priority = 2; /* 0.02 seconds */
   taskctl->running = 1;
   taskctl->now = 0;
   taskctl->tasks[0] = task;
   load_tr(task->sel);
   task_timer = timer_alloc();
-  timer_set_timer(task_timer, 2);
+  timer_set_timer(task_timer, task->priority);
   return task;
 }
 
@@ -56,23 +57,33 @@ struct Task *task_alloc(void)
   return 0; /*全部正在使用*/
 }
 
-void task_run(struct Task *task)
+void task_run(struct Task *task, int priority)
 {
-  task->flags = 2; /*活动中标志*/
-  taskctl->tasks[taskctl->running] = task;
-  taskctl->running++;
+  if (priority > 0) {
+    task->priority = priority;
+  }
+  if (task->flags != 2) {
+    task->flags = 2; /*活动中标志*/
+    taskctl->tasks[taskctl->running] = task;
+    taskctl->running++;
+  }
   return;
 }
 
 void task_switch(void)
 {
-  timer_set_timer(task_timer, 2);
-  if (taskctl->running >= 2) {
-    taskctl->now++;
-    if (taskctl->now == taskctl->running) {
+  struct Task *task;
+  taskctl->now++;
+  if (taskctl->now == taskctl->running) {
       taskctl->now = 0;
-    }
-    far_jmp(0, taskctl->tasks[taskctl->now]->sel);
+  }
+  task = taskctl->tasks[taskctl->now];
+  timer_set_timer(task_timer, task->priority);
+
+  // If there is only one task left, CPU will refuse to excute far_jmp(0, task->sel) since CPU will think
+  // this is a bug due to run the task itself.
+  if (taskctl->running >= 2) {
+    far_jmp(0, task->sel);
   }
   return;
 }

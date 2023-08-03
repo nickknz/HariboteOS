@@ -81,7 +81,7 @@ int main(void) {
     task_b[i]->tss.fs = 1 * 8;
     task_b[i]->tss.gs = 1 * 8;
     *((int *) (task_b[i]->tss.esp + 4)) = (int) sht_win_b[i];
-    task_run(task_b[i]);
+    task_run(task_b[i], i + 1);
   }
     
   // sht_win
@@ -124,10 +124,10 @@ int main(void) {
   put_fonts8_asc_sht(sht_back, 0, 32, COL8_FFFFFF, COL8_008484, s, 40);  // sheet_refresh(sht_back, 0, 0, binfo->scrnx, 48);
 
   for (;;) {
-    io_cli();
+    io_cli(); // 只是屏蔽中断，但还是会有中断发生
     if (fifo32_status(&fifo) == 0) {
       task_sleep(task_a);
-      io_stihlt();
+      io_stihlt(); //允许接受中断
     } else {
       data = fifo32_get(&fifo);
       io_sti();
