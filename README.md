@@ -108,7 +108,7 @@ because the range of values that can be stored in a char is -128 to 127 for a **
 - [X] day 13：Timer2
 - [X] day 14：Keyboard Input
 - [X] day 15：Multi-task 1
-- [ ] day 16：Multi-task 2
+- [X] day 16：Multi-task 2
 - [ ] day 17：命令行窗口
 - [ ] day 18：命令行命令
 - [ ] day 19：应用程序
