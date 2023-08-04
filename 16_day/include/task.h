@@ -7,8 +7,8 @@
 #define MAX_TASKS 1000 // 最大任务数量
 #define TASK_GDT0 3    // 定义从GDT的几号开始分配给TSS
 
-// #define MAX_TASKS_LV 100
-// #define MAX_TASKLEVELS 10
+#define MAX_TASKS_LV   100
+#define MAX_TASKLEVELS 10
 
 extern struct TaskCtl *taskctl;
 extern struct Timer *task_timer;
@@ -28,29 +28,21 @@ struct TSS32 {
 
 struct Task {
   int sel, flags; // sel用于存放GDT的编号
-  // int level, priority;
-  int priority;
+  int level, priority;
   struct TSS32 tss;
 };
 
-// struct TaskLevel {
-//   int running; // 正在运行的任务数量
-//   int now;     // 记录正在运行的任务
-//   struct Task *tasks[MAX_TASKS_LV];
-// };
-
-// struct TaskCtl {
-//   int now_lv;    // 现在活动中的level
-//   int lv_change; // 在下次任务切换时是否需要改变level
-//   struct TaskLevel level[MAX_TASKLEVELS];
-//   struct Task tasks0[MAX_TASKS];
-// };
+struct TaskLevel {
+  int running; // 正在运行的任务数量
+  int now;     // 记录正在运行的任务
+  struct Task *tasks[MAX_TASKS_LV];
+};
 
 struct TaskCtl {
-    int running; /*正在运行的任务数量*/
-    int now; /*这个变量用来记录当前正在运行的是哪个任务*/ 
-    struct Task *tasks[MAX_TASKS];
-    struct Task tasks0[MAX_TASKS];
+  int now_lv;    // 现在活动中的level
+  int lv_change; // 在下次任务切换时是否需要改变level
+  struct TaskLevel level[MAX_TASKLEVELS];
+  struct Task tasks0[MAX_TASKS];
 };
 
 void load_tr(int tr);
@@ -63,8 +55,7 @@ void mt_task_switch(void);
 
 struct Task *task_init(struct MemMan *memman);
 struct Task *task_alloc(void);
-// void task_run(struct Task *task, int level, int priority);
-void task_run(struct Task *task, int priority);
+void task_run(struct Task *task, int level, int priority);
 
 void task_switch(void);
 void task_sleep(struct Task *task);
