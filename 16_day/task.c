@@ -2,6 +2,7 @@
 #include "timer.h"
 #include "memory.h"
 #include "desctbl.h"
+#include "io.h"
 
 struct TaskCtl *taskctl;
 struct Timer *task_timer;
@@ -9,7 +10,7 @@ struct Timer *task_timer;
 struct Task *task_init(struct MemMan *memman)
 {
   int i;
-  struct Task *task;
+  struct Task *task, *idle;
   struct SegmentDescriptor *gdt = (struct SegmentDescriptor *) ADR_GDT;
   taskctl = (struct TaskCtl *) memman_alloc_4k(memman, sizeof (struct TaskCtl));
 
@@ -33,6 +34,18 @@ struct Task *task_init(struct MemMan *memman)
   load_tr(task->sel);
   task_timer = timer_alloc(); 
   timer_set_timer(task_timer, task->priority); 
+
+  idle = task_alloc();
+  idle->tss.esp = memman_alloc_4k(memman, 64 * 1024) + 64 * 1024;
+  idle->tss.eip = (int) &task_idle;
+  idle->tss.es = 1 * 8;
+  idle->tss.cs = 2 * 8;
+  idle->tss.ss = 1 * 8;
+  idle->tss.ds = 1 * 8;
+  idle->tss.fs = 1 * 8;
+  idle->tss.gs = 1 * 8;
+  task_run(idle, MAX_TASKLEVELS - 1, 1);
+
   return task;
 }
 
@@ -181,4 +194,11 @@ void task_switchsub(void)
 
   taskctl->now_lv = i;
   taskctl->lv_change = 0;
+}
+
+void task_idle(void)
+{
+  for (;;) {
+    io_hlt();
+  }  
 }

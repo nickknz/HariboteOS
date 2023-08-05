@@ -63,5 +63,6 @@ struct Task *task_now(void);
 void task_add(struct Task *task);
 void task_remove(struct Task *task);
 void task_switchsub(void);
+void task_idle(void);
 
 #endif // _TASK_H_
