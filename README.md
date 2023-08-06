@@ -33,7 +33,7 @@ This project aims for learning Operating System using the book《30天自制操�
 | 0x00270000 - 0x0027ffff | Global Descriptor Table (GDT)                   | 64 KB    |
 | 0x00280000 - 0x002fffff | Boot loader program (bootpack.hrb)              | 512 KB   |
 | 0x00300000 - 0x003fffff | Stack and other data                            | 1 MB     |
-| 0x00400000 -            | The location formemman_alloc                    | 128MB    |
+| 0x00400000 -            | The location for memman_alloc                    | 128MB    |
 
 After day 9 bootpack.c line 48, th ememory 0x00001000 - 0x0009e000 is freed.
 
@@ -109,7 +109,7 @@ because the range of values that can be stored in a char is -128 to 127 for a **
 - [X] day 14：Keyboard Input
 - [X] day 15：Multi-task 1
 - [X] day 16：Multi-task 2
-- [ ] day 17：命令行窗口
+- [ ] day 17：Console window
 - [ ] day 18：命令行命令
 - [ ] day 19：应用程序
 - [ ] day 20：API
