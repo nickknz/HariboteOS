@@ -109,8 +109,8 @@ because the range of values that can be stored in a char is -128 to 127 for a **
 - [X] day 14：Keyboard Input
 - [X] day 15：Multi-task 1
 - [X] day 16：Multi-task 2
-- [ ] day 17：Console window
-- [ ] day 18：命令行命令
+- [X] day 17：Console window
+- [ ] day 18：dir command
 - [ ] day 19：应用程序
 - [ ] day 20：API
 - [ ] day 21：保护操作系统
