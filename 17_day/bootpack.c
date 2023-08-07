@@ -33,7 +33,7 @@ int main(void) {
   struct FIFO32 fifo;
   int fifobuf[1024], data;
   struct Task *task_a, *task_cons;
-  int key_to = 0;
+  int key_to = 0, key_shift = 0;
 
   init_gdtidt();
   init_pic(); // GDT/IDT完成初始化，开放CPU中断
@@ -132,20 +132,29 @@ int main(void) {
         sprintf(s, "%X", data - 256);
         put_fonts8_asc_sht(sht_back, 0, 16, COL8_FFFFFF, COL8_008484, s, 2);
 
-        if (data < 0x54 + 256 && keytable[data - 256] != 0) { /* 一般字符 */
+        if (data < 0x80 + 256) {  /*将按键编码转换为字符编码*/
+          if (key_shift == 0) {
+            s[0] = keytable0[data - 256];
+          } else {
+            s[0] = keytable1[data - 256];
+          }
+        } else {
+          s[0] = 0;
+        }
+
+        if (s[0] != 0) { /* 一般字符 */
           if (key_to == 0) { // 发送给任务A
             if (cursor_x < 128) {
               /*显示一个字符之后将光标后移一位*/
-              s[0] = keytable[data - 256];
               s[1] = 0;
               put_fonts8_asc_sht(sht_win, cursor_x, 28, COL8_000000, COL8_FFFFFF, s, 1); 
               cursor_x += 8;
             }
           } else { /*发送给命令行窗口*/
-            fifo32_put(&task_cons->fifo, keytable[data - 256] + 256);
+            fifo32_put(&task_cons->fifo, s[0] + 256);
           }
         }
-        if (data == 256+0x0e) {/*退格键 */ 
+        if (data == 256 + 0x0e) {/*退格键 */ 
           if (key_to == 0) {  /*发送给任务A */
             if (cursor_x > 8) {
               /* 用空格键把光标消去后，后移1次光标 */
@@ -169,6 +178,18 @@ int main(void) {
 					sheet_refresh(sht_win,  0, 0, sht_win->bxsize,  21);
 					sheet_refresh(sht_cons, 0, 0, sht_cons->bxsize, 21);
 				}
+        if (data == 256 + 0x2a) {  /*左Shift ON */
+          key_shift |= 1;
+        }
+        if (data == 256 + 0x36) {  /*右Shift ON */
+          key_shift |= 2;
+        }
+        if (data == 256 + 0xaa) {   /*左Shift OFF */
+          key_shift &= ~1;
+        }
+        if (data == 256 + 0xb6) {
+          key_shift &= ~2;
+        }
         /* 光标再显示 */
         box_fill8(sht_win->buf,sht_win->bxsize, cursor_c, cursor_x, 28, cursor_x + 7, 43);
         sheet_refresh(sht_win, cursor_x, 28, cursor_x + 8, 44);
