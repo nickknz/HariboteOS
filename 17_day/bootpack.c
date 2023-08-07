@@ -33,7 +33,7 @@ int main(void) {
   struct FIFO32 fifo;
   int fifobuf[1024], data;
   struct Task *task_a, *task_cons;
-  int key_to = 0, key_shift = 0;
+  int key_to = 0, key_shift = 0, key_leds = (binfo->leds >> 4) & 7;
 
   init_gdtidt();
   init_pic(); // GDT/IDT完成初始化，开放CPU中断
@@ -142,6 +142,13 @@ int main(void) {
           s[0] = 0;
         }
 
+        if ('A' <= s[0] && s[0] <= 'Z') {   /*当输入字符为英文字母时*/
+          if (((key_leds & 4) == 0 && key_shift == 0) ||
+              ((key_leds & 4) != 0 && key_shift != 0)) {
+            s[0] += 0x20; /*将大写字母转换为小写字母*/
+          }
+        }
+
         if (s[0] != 0) { /* 一般字符 */
           if (key_to == 0) { // 发送给任务A
             if (cursor_x < 128) {
@@ -178,16 +185,16 @@ int main(void) {
 					sheet_refresh(sht_win,  0, 0, sht_win->bxsize,  21);
 					sheet_refresh(sht_cons, 0, 0, sht_cons->bxsize, 21);
 				}
-        if (data == 256 + 0x2a) {  /*左Shift ON */
+        if (data == 256 + 0x2a) {   /*左Shift ON */
           key_shift |= 1;
         }
-        if (data == 256 + 0x36) {  /*右Shift ON */
+        if (data == 256 + 0x36) {   /*右Shift ON */
           key_shift |= 2;
         }
         if (data == 256 + 0xaa) {   /*左Shift OFF */
           key_shift &= ~1;
         }
-        if (data == 256 + 0xb6) {
+        if (data == 256 + 0xb6) {   /*右Shift OFF */
           key_shift &= ~2;
         }
         /* 光标再显示 */
