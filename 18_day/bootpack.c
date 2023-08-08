@@ -189,10 +189,15 @@ int main(void) {
 						key_to = 1;
 						make_window_title8(buf_win,  sht_win->bxsize,  "task_a",  0);
 						make_window_title8(buf_cons, sht_cons->bxsize, "console", 1);
+            cursor_c = -1; // 不显示光标
+            box_fill8(sht_win->buf, sht_win->bxsize, COL8_FFFFFF, cursor_x, 28, cursor_x + 7, 43);
+            fifo32_put(&task_cons->fifo, 2); // 命令行窗口光标ON
 					} else {
 						key_to = 0;
 						make_window_title8(buf_win,  sht_win->bxsize,  "task_a",  1);
 						make_window_title8(buf_cons, sht_cons->bxsize, "console", 0);
+            cursor_c = COL8_000000;          // 显示光标
+            fifo32_put(&task_cons->fifo, 3); // 命令行窗口光标OFF
 					}
 					sheet_refresh(sht_win,  0, 0, sht_win->bxsize,  21);
 					sheet_refresh(sht_cons, 0, 0, sht_cons->bxsize, 21);
@@ -244,7 +249,9 @@ int main(void) {
         }
         
         /* 光标再显示 */
-        box_fill8(sht_win->buf,sht_win->bxsize, cursor_c, cursor_x, 28, cursor_x + 7, 43);
+        if (cursor_c >= 0) {
+          box_fill8(sht_win->buf, sht_win->bxsize, cursor_c, cursor_x, 28, cursor_x + 7, 43);
+        }
         sheet_refresh(sht_win, cursor_x, 28, cursor_x + 8, 44);
       } else if (512 <= data && data <= 767) { /* 鼠标数据*/
         if (mouse_decode(&mdec, data - 512) != 0) {
@@ -295,14 +302,20 @@ int main(void) {
       } else if (data <= 1) { /* 光标用定时器*/
         if (data == 1) {
           timer_init(timer, &fifo, 0);
-          cursor_c = COL8_000000;
+          if (cursor_c >= 0) {
+            cursor_c = COL8_000000;
+          }
         } else {
           timer_init(timer, &fifo, 1);
-          cursor_c = COL8_FFFFFF;
+          if (cursor_c >= 0) {
+            cursor_c = COL8_FFFFFF;
+          }
         }
         timer_set_timer(timer, 50);
-        box_fill8(sht_win->buf, sht_win->bxsize, cursor_c, cursor_x, 28, cursor_x + 7, 43);
-        sheet_refresh(sht_win, cursor_x, 28, cursor_x + 8, 44);
+        if (cursor_c >= 0) {
+          box_fill8(sht_win->buf, sht_win->bxsize, cursor_c, cursor_x, 28, cursor_x + 7, 43);
+          sheet_refresh(sht_win, cursor_x, 28, cursor_x + 8, 44);
+        }
       } 
     }
   }
@@ -315,7 +328,7 @@ void console_task(struct Sheet *sheet)
 	struct Timer *timer;
 	struct Task *task = task_now();
 
-	int i, fifobuf[128], cursor_x = 16, cursor_c = COL8_000000;
+	int i, fifobuf[128], cursor_x = 16, cursor_c = -1;
   char s[2];
 
 	fifo32_init(&task->fifo, 128, fifobuf, task);
@@ -338,13 +351,22 @@ void console_task(struct Sheet *sheet)
 			if (i <= 1) { /*光标用定时器*/
 				if (i != 0) {
 					timer_init(timer, &task->fifo, 0); /*下次置0 */
-					cursor_c = COL8_FFFFFF;
+          if (cursor_c >= 0) {
+            cursor_c = COL8_FFFFFF;
+          }
 				} else {
 					timer_init(timer, &task->fifo, 1); /*下次置1 */
-					cursor_c = COL8_000000;
+          if (cursor_c >= 0) {
+            cursor_c = COL8_000000;
+          }
 				}
 				timer_set_timer(timer, 50);
-			} else if (256 <= i && i <= 511) { /*键盘数据(通过任务A) */ 
+			} else if (i == 2) {  // 窗口光标ON
+        cursor_c = COL8_FFFFFF;
+      } else if (i == 3) {  // 窗口光标OFF
+        box_fill8(sheet->buf, sheet->bxsize, COL8_000000, cursor_x, 28, cursor_x + 7, 43);
+        cursor_c = -1;
+      } else if (256 <= i && i <= 511) { /*键盘数据(通过任务A) */ 
           if (i == 8 + 256) {
             /*退格键*/
             if (cursor_x > 16) {
@@ -364,7 +386,9 @@ void console_task(struct Sheet *sheet)
           }
       }
       /*重新显示光标*/
-      box_fill8(sheet->buf, sheet->bxsize, cursor_c, cursor_x, 28, cursor_x + 7, 43);
+      if (cursor_c >= 0) {
+        box_fill8(sheet->buf, sheet->bxsize, cursor_c, cursor_x, 28, cursor_x + 7, 43);
+      }
       sheet_refresh(sheet, cursor_x, 28, cursor_x + 8, 44);
 		}
 	}
