@@ -103,14 +103,14 @@ because the range of values that can be stored in a char is -128 to 127 for a **
 - [X] day 8：Mouse and 32-bit mode
 - [X] day 9：Memory Management
 - [X] day 10：Processing overlap
-- [X] day 11：Improve refresh Algorithm
+- [X] day 11：Improve refresh algorithm
 - [X] day 12：Timer1
 - [X] day 13：Timer2
 - [X] day 14：Keyboard Input
 - [X] day 15：Multi-task 1
 - [X] day 16：Multi-task 2
 - [X] day 17：Console window
-- [ ] day 18：dir command
+- [ ] day 18：Console command
 - [ ] day 19：应用程序
 - [ ] day 20：API
 - [ ] day 21：保护操作系统
