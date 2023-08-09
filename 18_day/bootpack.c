@@ -14,6 +14,7 @@
 #include "timer.h"
 #include "window.h"
 #include "task.h"
+#include "fs.h"
 
 // new start
 void task_b_main(struct Sheet *sht_back);
@@ -321,6 +322,7 @@ void console_task(struct Sheet *sheet, unsigned int memtotal)
 	struct Timer *timer;
   char s[2], cmdline[30];
   struct MemMan *memman = (struct MemMan *) MEMMAN_ADDR;
+  struct FileInfo *finfo = (struct FileInfo *) (ADR_DISKIMG + 0x002600);
 
 	fifo32_init(&task->fifo, 128, fifobuf, task);
 
@@ -390,6 +392,28 @@ void console_task(struct Sheet *sheet, unsigned int memtotal)
               }
               sheet_refresh(sheet, 8, 28, 8 + 240, 28 + 128);
               cursor_y = 28;
+            } else if (strcmp(trimed_cmdline, "ls") == 0) {
+              /* ls command */
+              for (int x = 0; x < 224; x++) {
+                if (finfo[x].name[0] == '\0') {
+                  break;
+                }
+
+                if (finfo[x].name[0] != 0xe5) {
+                  if ((finfo[x].type & 0x18) == 0) {
+                    sprintf(s, "filename.ext   %d", finfo[x].size);
+                    for (int y = 0; y < 8; y++) {
+                      s[y] = finfo[x].name[y];
+                    }
+                    s[9] = finfo[x].ext[0];
+                    s[10] = finfo[x].ext[1];
+                    s[11] = finfo[x].ext[2];
+                    put_fonts8_asc_sht(sheet, 8, cursor_y, COL8_FFFFFF, COL8_000000, s, 30);
+                    cursor_y = cons_newline(cursor_y, sheet);
+                  }
+                }
+              }
+            cursor_y = cons_newline(cursor_y, sheet);
             } else if (trimed_cmdline[0] != 0) {
               /*不是命令，也不是空行 */
               put_fonts8_asc_sht(sheet, 8, cursor_y, COL8_FFFFFF, COL8_000000, "Not found command.", 19);

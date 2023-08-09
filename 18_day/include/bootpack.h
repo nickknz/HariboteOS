@@ -2,6 +2,7 @@
 #define _BOOTPACK_H_
 
 #define ADR_BOOTINFO 0x00000ff0
+#define ADR_DISKIMG 0x00100000
 
 struct BootInfo{  /* 0x0ff0-0x0fff */
   char cyls; /* 启动区读硬盘读到何处为止 */
