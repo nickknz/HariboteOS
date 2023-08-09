@@ -15,12 +15,9 @@
 #include "window.h"
 #include "task.h"
 #include "fs.h"
+#include "console.h"
 
-// new start
-void task_b_main(struct Sheet *sht_back);
 void console_task(struct Sheet *sheet, unsigned int memtotal);
-int cons_newline(int cursor_y, struct Sheet *sheet);
-// new end
 
 int main(void) {
   struct BootInfo *binfo = (struct BootInfo *)ADR_BOOTINFO;
@@ -281,11 +278,8 @@ int main(void) {
             my = binfo->scrny - 1;
           }
 
-          // sprintf(s, "(%d, %d)", mx, my);
-          // put_fonts8_asc_sht(sht_back, 0, 0, COL8_FFFFFF, COL8_008484, s, 10);
           sheet_slide(sht_mouse, mx, my);
 
-          sheet_slide(sht_mouse, mx, my);
           if ((mdec.btn & 0x01) != 0) {
             /* 按下左键、移动sht_win */ 
             sheet_slide(sht_win, mx - 80, my - 8);
@@ -444,23 +438,3 @@ void console_task(struct Sheet *sheet, unsigned int memtotal)
 	}
 }
 
-int cons_newline(int cursor_y, struct Sheet *sheet)
-{
-	int x, y;
-	if (cursor_y < 28 + 112) {
-		cursor_y += 16; /*换行*/
-	} else {  /*滚动*/
-		for (y = 28; y < 28 + 112; y++) {
-			for (x = 8; x < 8 + 240; x++) {
-				sheet->buf[x + y * sheet->bxsize] = sheet->buf[x + (y + 16) * sheet->bxsize];
-			}
-		}
-		for (y = 28 + 112; y < 28 + 128; y++) {
-			for (x = 8; x < 8 + 240; x++) {
-				sheet->buf[x + y * sheet->bxsize] = COL8_000000;
-			}
-		}
-		sheet_refresh(sheet, 8, 28, 8 + 240, 28 + 128);
-	}
-	return cursor_y;
-}

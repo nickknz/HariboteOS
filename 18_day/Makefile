@@ -24,7 +24,7 @@ L_OBJS  := libc/stdio/stdio.bin libc/string/strcmp.bin libc/string/trim.bin
 # Kernel Objects
 K_OBJS	:= bootpack.bin io.bin pm.bin hankaku.bin desctbl.bin graphic.bin \
 		int.bin inthandler.bin fifo.bin keyboard.bin mouse.bin memory.bin \
-		sheet.bin window.bin timer.bin task_asm.bin task.bin
+		sheet.bin window.bin timer.bin task_asm.bin task.bin console.bin
 SYS	:= haribote.sys
 IMG	:= haribote.img
 
