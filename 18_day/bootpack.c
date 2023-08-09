@@ -379,6 +379,15 @@ void console_task(struct Sheet *sheet, unsigned int memtotal)
               put_fonts8_asc_sht(sheet, 8, cursor_y, COL8_FFFFFF, COL8_000000, s, 30);
               cursor_y = cons_newline(cursor_y, sheet);
               cursor_y = cons_newline(cursor_y, sheet);
+            } else if (strcmp(cmdline, "clear") == 0) {   
+              /* clear command */
+              for (int y = 28; y < 28 + 128; y++) {
+                for (int x = 8; x < 8 + 240; x++) {
+                  sheet->buf[x + y * sheet->bxsize] = COL8_000000;
+                }
+              }
+              sheet_refresh(sheet, 8, 28, 8 + 240, 28 + 128);
+              cursor_y = 28;
             } else if (cmdline[0] != 0) {
               /*不是命令，也不是空行 */
               put_fonts8_asc_sht(sheet, 8, cursor_y, COL8_FFFFFF, COL8_000000, "Not found command.", 19);
