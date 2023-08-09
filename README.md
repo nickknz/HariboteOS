@@ -4,9 +4,9 @@ This project aims for learning Operating System using the book《30天自制操�
 ## Project features
 - Uses GCC and NASM as the toolchain, allowing cross-platform use
 - Builds the kernel based on LinkerScript
-- Support several command lines (mem, clear, )
+- Support several command lines (mem, clear, ls)
 - Does not rely on the author's custom HRB file format and supports the ELF file format
-<!-- - Implements simple versions of some C standard library functions (libc file) -->
+- Implements simple versions of some C standard library functions (libc file)
 - Header files are split, making the structure clearer
 - Supports Chinese keyboard input.
 
@@ -116,7 +116,7 @@ because the range of values that can be stored in a char is -128 to 127 for a **
 - [X] day 15：Multi-task 1
 - [X] day 16：Multi-task 2
 - [X] day 17：Console window
-- [ ] day 18：Command line (mem, )
+- [X] day 18：Command line (mem, clear, ls)
 - [ ] day 19：应用程序
 - [ ] day 20：API
 - [ ] day 21：保护操作系统
