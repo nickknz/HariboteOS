@@ -367,10 +367,12 @@ void console_task(struct Sheet *sheet, unsigned int memtotal)
           } else if (i == 10 + 256) {   // 回车键 Enter
             /*用空格将光标擦除*/
             put_fonts8_asc_sht(sheet, cursor_x, cursor_y, COL8_FFFFFF, COL8_000000, " ", 1);
+            int len = cursor_x / 8 - 2;
             cmdline[cursor_x / 8 - 2] = 0;
             cursor_y = cons_newline(cursor_y, sheet);
             /*执行命令*/
-            if (strcmp(cmdline, "mem") == 0) {
+            char *trimed_cmdline = trim(cmdline, len);
+            if (strcmp(trimed_cmdline, "mem") == 0) {
               /* mem command */
               sprintf(s, "total   %dMB", memtotal / (1024 * 1024));
               put_fonts8_asc_sht(sheet, 8, cursor_y, COL8_FFFFFF, COL8_000000, s, 30);
@@ -379,7 +381,7 @@ void console_task(struct Sheet *sheet, unsigned int memtotal)
               put_fonts8_asc_sht(sheet, 8, cursor_y, COL8_FFFFFF, COL8_000000, s, 30);
               cursor_y = cons_newline(cursor_y, sheet);
               cursor_y = cons_newline(cursor_y, sheet);
-            } else if (strcmp(cmdline, "clear") == 0) {   
+            } else if (strcmp(trimed_cmdline, "clear") == 0) {   
               /* clear command */
               for (int y = 28; y < 28 + 128; y++) {
                 for (int x = 8; x < 8 + 240; x++) {
@@ -388,7 +390,7 @@ void console_task(struct Sheet *sheet, unsigned int memtotal)
               }
               sheet_refresh(sheet, 8, 28, 8 + 240, 28 + 128);
               cursor_y = 28;
-            } else if (cmdline[0] != 0) {
+            } else if (trimed_cmdline[0] != 0) {
               /*不是命令，也不是空行 */
               put_fonts8_asc_sht(sheet, 8, cursor_y, COL8_FFFFFF, COL8_000000, "Not found command.", 19);
               cursor_y = cons_newline(cursor_y, sheet);
