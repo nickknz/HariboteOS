@@ -4,6 +4,7 @@ This project aims for learning Operating System using the book《30天自制操�
 ## Project features
 - Uses GCC and NASM as the toolchain, allowing cross-platform use
 - Builds the kernel based on LinkerScript
+- Support several command lines (mem, clear, )
 - Does not rely on the author's custom HRB file format and supports the ELF file format
 <!-- - Implements simple versions of some C standard library functions (libc file) -->
 - Header files are split, making the structure clearer
@@ -35,7 +36,12 @@ This project aims for learning Operating System using the book《30天自制操�
 | 0x00300000 - 0x003fffff | Stack and other data                            | 1 MB     |
 | 0x00400000 -            | The location for memman_alloc                    | 128MB    |
 
-After day 9 bootpack.c line 48, th ememory 0x00001000 - 0x0009e000 is freed.
+After day 9 bootpack.c line 48, the memory 0x00001000 - 0x0009e000 is freed.
+### Address infomation for some structs
+| Memory Range            | Description                                     | Size     |
+| ------------------------| ----------------------------------------------- | -------- |
+| 0x00000ff0 - 0x00000fff | ADR_BOOTINFO                                    | 16 bytes |
+| 0x003c0000 -            | MEMMAN_ADDR                                     | ~32 KB   |
 
 ## Environment set up
 Please use the x86_64-elf-gcc toolchain to compile on Mac. It can be installed using the command "brew install x86_64-elf-gcc x86_64-elf-binutils x86_64-elf-gdb".
@@ -110,7 +116,7 @@ because the range of values that can be stored in a char is -128 to 127 for a **
 - [X] day 15：Multi-task 1
 - [X] day 16：Multi-task 2
 - [X] day 17：Console window
-- [ ] day 18：Console command
+- [ ] day 18：Command line (mem, )
 - [ ] day 19：应用程序
 - [ ] day 20：API
 - [ ] day 21：保护操作系统
