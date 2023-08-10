@@ -409,7 +409,7 @@ void console_task(struct Sheet *sheet, unsigned int memtotal)
                 }
               }
             cursor_y = cons_newline(cursor_y, sheet);
-            } else if (trimed_cmdline[0] == 'c' && trimed_cmdline[1] == 'a' && trimed_cmdline[2] == 't') {
+            } else if (strncmp(trimed_cmdline, "cat ", 4) == 0) {
               /* cat command */
               int x, y;
               /*准备文件名*/
@@ -456,13 +456,31 @@ void console_task(struct Sheet *sheet, unsigned int memtotal)
                   /*逐字输出*/
                   s[0] = p[x];
                   s[1] = '\0';
-                
-                  put_fonts8_asc_sht(sheet, cursor_x, cursor_y, COL8_FFFFFF,
-                                    COL8_000000, s, 1);
-                  cursor_x += 8;
-                  if (cursor_x == 8 + 240) { /*到达最右端后换行*/ 
+
+                  if (s[0] == '\t') {          /*制表符 tab缩进*/
+                     for (;;) {
+                      put_fonts8_asc_sht(sheet, cursor_x, cursor_y, COL8_FFFFFF, COL8_000000, " ", 1);
+                      cursor_x += 8;
+                      if (cursor_x == 8 + 240) {
+                        cursor_x = 8;
+                        cursor_y = cons_newline(cursor_y, sheet);
+                      }
+                      if (!((cursor_x - 8) & 0x1f)) {
+                        break; // 被32整除则break
+                      }
+                    }
+                  } else if (s[0] == '\n') {   /*换行*/
                     cursor_x = 8;
                     cursor_y = cons_newline(cursor_y, sheet);
+                  } else if (s[0] == '\r') {   /*回车*/
+                    // 回车符，暂不处理
+                  } else {                     /*一般字符*/
+                    put_fonts8_asc_sht(sheet, cursor_x, cursor_y, COL8_FFFFFF, COL8_000000, s, 1);
+                    cursor_x += 8;
+                    if (cursor_x == 8 + 240) { /*到达最右端后换行*/ 
+                      cursor_x = 8;
+                      cursor_y = cons_newline(cursor_y, sheet);
+                    }
                   }
                 }
               } else {
