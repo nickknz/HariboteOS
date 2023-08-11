@@ -1,13 +1,19 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "bootpack.h"
 #include "console.h"
-#include "graphic.h"
-#include "sheet.h"
-#include "io.h"
+#include "desctbl.h"
 #include "fifo.h"
-#include "task.h"
 #include "fs.h"
+#include "graphic.h"
+#include "memory.h"
+#include "mouse.h"
+#include "io.h"
+#include "sheet.h"
+#include "task.h"
+#include "timer.h"
+
 
 void console_task(struct Sheet *sheet, unsigned int memtotal)
 {
@@ -18,6 +24,8 @@ void console_task(struct Sheet *sheet, unsigned int memtotal)
 	struct MemMan *memman = (struct MemMan *) MEMMAN_ADDR;
 	struct FileInfo *finfo = (struct FileInfo *) (ADR_DISKIMG + 0x002600);
 	int *fat = (int *)memman_alloc_4k(memman, 4 * 2880);
+	struct SegmentDescriptor *gdt = (struct SegmentDescriptor *) ADR_GDT;
+	int x, y;
 
 	fifo32_init(&task->fifo, 128, fifobuf, task);
 
@@ -113,7 +121,7 @@ void console_task(struct Sheet *sheet, unsigned int memtotal)
 						cursor_y = cons_newline(cursor_y, sheet);
 					} else if (strncmp(trimed_cmdline, "cat ", 4) == 0) {
 						/* cat command */
-						int x, y;
+						
 						/*准备文件名*/
 						for (y = 0; y < 11; y++) {
 							s[y] = ' ';
@@ -190,6 +198,47 @@ void console_task(struct Sheet *sheet, unsigned int memtotal)
 							/*没有找到文件的情况*/
 							put_fonts8_asc_sht(sheet, 8, cursor_y, COL8_FFFFFF, COL8_000000,
 											"File not found.", 15);
+							cursor_y = cons_newline(cursor_y, sheet);
+						}
+						cursor_y = cons_newline(cursor_y, sheet);
+					} else if (strcmp(trimed_cmdline, "hlt") == 0) {
+						/*启动应用程序hlt.asm */
+						for (y = 0; y < 11; y++) {
+							s[y] = ' ';
+						}
+
+						s[0] = 'H';
+						s[1] = 'L';
+						s[2] = 'T';
+						s[8] = 'H';
+						s[9] = 'R';
+						s[10] = 'B';
+						
+						for (x = 0; x < 224; ) {
+							if (finfo[x].name[0] == '\0') {
+								break;
+							}
+							if (!(finfo[x].type & 0x18)) {
+								for (y = 0; y < 11; y++) {
+									if (finfo[x].name[y] != s[y]) {
+										goto hlt_next_file;
+									}
+								}
+								break;		/*找到文件*/
+							}
+							hlt_next_file:	
+							x++;
+						}
+						if (x < 224 && finfo[x].name[0] != '\0') {
+							/*找到文件的情况*/
+							char *p = (char *) memman_alloc_4k(memman, finfo[x].size);
+							file_load_file(finfo[x].clustno, finfo[x].size, p, fat, (char *)(ADR_DISKIMG + 0x003e00));
+							set_segmdesc(gdt + 1003, finfo[x].size - 1, (int) p, AR_CODE32_ER);
+							far_jmp(0, 1003 * 8);
+							memman_free_4k(memman, (int) p, finfo[x].size);
+						} else {
+							/*没有找到文件的情况*/
+							put_fonts8_asc_sht(sheet, 8, cursor_y, COL8_FFFFFF, COL8_000000, "File not found.", 15);
 							cursor_y = cons_newline(cursor_y, sheet);
 						}
 						cursor_y = cons_newline(cursor_y, sheet);

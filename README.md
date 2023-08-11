@@ -4,7 +4,7 @@ This project aims for learning Operating System using the book《30天自制操�
 ## Project features
 - Uses GCC and NASM as the toolchain, allowing cross-platform use
 - Builds the kernel based on LinkerScript
-- Support several command lines (mem, clear, ls)
+- Support several command lines (mem, clear, ls, cat)
 - Does not rely on the author's custom HRB file format and supports the ELF file format
 - Implements simple versions of some C standard library functions (libc file)
 - Header files are split, making the structure clearer
@@ -94,9 +94,10 @@ set_gatedesc(idt + 0x2c, (int)asm_int_handler2c, 2 * 8, AR_INTGATE32);
 1. When I use **unsigned char** variable data to receive the return value int from fifo32_get(&fifo), an **overflow** occur 
 because the range of values that can be stored in a char is -128 to 127 for a **signed char**, or 0 to 255 for an 
 **unsigned char**.
+2. There is a question I was confused for several days: In day 19, bootpack.c line 133. if task_a sleeps before io_stihlt(), how could CPU gets interrupts and awake the task_a up? **Answer**: Remember that we initialize all tasks eflags = 0x0202 which is IF = 1 in task_alloc function. In task_sleep function, we far jump to another task. After we jumped into the another task, CPU will be interruptable because the task->tss.eflag == 0x0202.
 
 ## The bug have not fixed
-1. In day 15, when we are using counter to test task switching (15.5 in textbook), the screen processing will be extremely slow if we are using io_sti instead of io_stihlt. 
+1. In day 15, when we are using counter to test task switching (15.5 in textbook), the screen processing will be extremely slow if we are using io_sti instead of io_stihlt.
 
 ## Project progress
 - [X] day 1：Hello world
@@ -117,7 +118,7 @@ because the range of values that can be stored in a char is -128 to 127 for a **
 - [X] day 16：Multi-task 2
 - [X] day 17：Console window
 - [X] day 18：Command line (mem, clear, ls)
-- [ ] day 19：应用程序
+- [X] day 19：Application development (support cat cmd and FAT)
 - [ ] day 20：API
 - [ ] day 21：保护操作系统
 - [ ] day 22：C语言应用程序（修改为ELF格式）
