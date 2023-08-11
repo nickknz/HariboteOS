@@ -16,6 +16,7 @@
 #include "task.h"
 #include "fs.h"
 #include "console.h"
+#include "fs.h"
 
 void console_task(struct Sheet *sheet, unsigned int memtotal);
 
@@ -317,13 +318,15 @@ void console_task(struct Sheet *sheet, unsigned int memtotal)
   char s[30], cmdline[30];
   struct MemMan *memman = (struct MemMan *) MEMMAN_ADDR;
   struct FileInfo *finfo = (struct FileInfo *) (ADR_DISKIMG + 0x002600);
-  // int x, y;
+  int *fat = (int *)memman_alloc_4k(memman, 4 * 2880);
 
 	fifo32_init(&task->fifo, 128, fifobuf, task);
 
 	timer = timer_alloc();
 	timer_init(timer, &task->fifo, 1);
 	timer_set_timer(timer, 50);
+
+  file_read_fat(fat, (unsigned char *)(ADR_DISKIMG + 0x000200));
 
   /*显示提示符prompt*/
   put_fonts8_asc_sht(sheet, 8, 28, COL8_FFFFFF, COL8_000000, ">", 1);  
@@ -449,12 +452,12 @@ void console_task(struct Sheet *sheet, unsigned int memtotal)
               }
               if (x < 224 && finfo[x].name[0] != '\0') {
                 /*找到文件的情况*/
-                y = finfo[x].size;
-                char *p = (char *) (finfo[x].clsutno * 512 + 0x003e00 + ADR_DISKIMG);
+                char *p = (char *)memman_alloc_4k(memman, finfo[x].size);
+                file_load_file(finfo[x].clustno, finfo[x].size, p, fat, (char *)(ADR_DISKIMG + 0x003e00));
                 cursor_x = 8;
-                for (x = 0; x < y; ++x) {
+                for (y = 0; y < finfo[x].size; ++y) {
                   /*逐字输出*/
-                  s[0] = p[x];
+                  s[0] = p[y];
                   s[1] = '\0';
 
                   if (s[0] == '\t') {          /*制表符 tab缩进*/
@@ -483,6 +486,7 @@ void console_task(struct Sheet *sheet, unsigned int memtotal)
                     }
                   }
                 }
+                memman_free_4k(memman, (int)p, finfo[x].size);
               } else {
                 /*没有找到文件的情况*/
                 put_fonts8_asc_sht(sheet, 8, cursor_y, COL8_FFFFFF, COL8_000000,
