@@ -70,7 +70,7 @@ void cmd_cat(struct Console *cons, int *fat, char *cmdline) {
         cons_putnstr(cons, p, finfo->size);
         memman_free_4k(memman, (int)p, finfo->size);
     } else {          /*没有找到文件的情况*/
-    cons_putstr(cons, "File not found.\n");
+        cons_putstr(cons, "File not found.\n");
     }
 
     cons_newline(cons);
@@ -78,7 +78,7 @@ void cmd_cat(struct Console *cons, int *fat, char *cmdline) {
 
 void cmd_hlt(struct Console *cons, int *fat) {
     struct MemMan *memman = (struct MemMan *) MEMMAN_ADDR;
-    struct FileInfo *finfo = file_search("HLT.HRB", (struct FileInfo *)(ADR_DISKIMG + 0x002600), 224);
+    struct FileInfo *finfo = file_search("HELLO.HRB", (struct FileInfo *)(ADR_DISKIMG + 0x002600), 224);
     struct SegmentDescriptor *gdt = (struct SegmentDescriptor *) ADR_GDT;
     char *p;
 
@@ -86,7 +86,7 @@ void cmd_hlt(struct Console *cons, int *fat) {
         char *p = (char *) memman_alloc_4k(memman, finfo->size);
         file_load_file(finfo->clustno, finfo->size, p, fat, (char *)(ADR_DISKIMG + 0x003e00));
         set_segmdesc(gdt + 1003, finfo->size - 1, (int) p, AR_CODE32_ER);
-        far_jmp(0, 1003 * 8);
+        far_call(0, 1003 * 8);
         memman_free_4k(memman, (int) p, finfo->size);
     } else {          /*没有找到文件的情况*/
         cons_putstr(cons, "File not found.\n");

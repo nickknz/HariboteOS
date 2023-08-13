@@ -25,9 +25,9 @@ L_OBJS  := libc/stdio/stdio.bin libc/string/strcmp.bin libc/string/trim.bin libc
 K_OBJS	:= bootpack.bin io.bin pm.bin hankaku.bin desctbl.bin graphic.bin \
 		int.bin inthandler.bin fifo.bin keyboard.bin mouse.bin memory.bin \
 		sheet.bin window.bin timer.bin task_asm.bin task.bin console.bin  \
-		fs.bin command.bin
+		fs.bin command.bin api_asm.bin api.bin
 # Applications
-APPS	:= app/hlt.hrb
+APPS	:= app/hello.hrb
 SYS		:= haribote.sys
 IMG		:= haribote.img
 

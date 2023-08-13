@@ -63,8 +63,7 @@ int main(void) {
 
   // sht_back
   sht_back = sheet_alloc(shtctl);
-  buf_back =
-      (unsigned char *)memman_alloc_4k(memman, binfo->scrnx * binfo->scrny);
+  buf_back = (unsigned char *)memman_alloc_4k(memman, binfo->scrnx * binfo->scrny);
   sheet_setbuf(sht_back, buf_back, binfo->scrnx, binfo->scrny, -1); // 没有透明色
   init_screen8(buf_back, binfo->scrnx, binfo->scrny);
 

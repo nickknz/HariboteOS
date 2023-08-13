@@ -51,6 +51,7 @@ void load_tr(int tr);
 void taskswitch4(void);
 void taskswitch3(void);
 void far_jmp(int eip, int cs);
+void far_call(int eip, int cs);
 
 void mt_init(void);
 void mt_task_switch(void);
