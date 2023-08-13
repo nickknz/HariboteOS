@@ -43,6 +43,12 @@ After day 9 bootpack.c line 48, the memory 0x00001000 - 0x0009e000 is freed.
 | 0x00000ff0 - 0x00000fff | ADR_BOOTINFO                                    | 16 bytes |
 | 0x003c0000 -            | MEMMAN_ADDR                                     | ~32 KB   |
 
+## System Call API
+Register edx number:
+Function number 1......cons_putchar(AL = char number) 
+Function number 2......cons_putstr(EBX = string address) 
+Function number 3......cons_putnstr(EBX = string address, ECX = string length)
+
 ## Environment set up
 Please use the x86_64-elf-gcc toolchain to compile on Mac. It can be installed using the command "brew install x86_64-elf-gcc x86_64-elf-binutils x86_64-elf-gdb".
 
@@ -95,6 +101,7 @@ set_gatedesc(idt + 0x2c, (int)asm_int_handler2c, 2 * 8, AR_INTGATE32);
 because the range of values that can be stored in a char is -128 to 127 for a **signed char**, or 0 to 255 for an 
 **unsigned char**.
 2. There is a question I was confused for several days: In day 19, bootpack.c line 133. if task_a sleeps before io_stihlt(), how could CPU gets interrupts and awake the task_a up? **Answer**: Remember that we initialize all tasks eflags = 0x0202 which is IF = 1 in task_alloc function. In task_sleep function, we far jump to another task. After we jumped into the another task, CPU will be interruptable because the task->tss.eflag == 0x0202.
+3. In day 19, when we use hlt command, if we add a RET in hlt.asm in app, the system will crash. Because we using far_jmp instead of far_call in cmd_hlt() function (line 89) in command.c
 
 ## The bug have not fixed
 1. In day 15, when we are using counter to test task switching (15.5 in textbook), the screen processing will be extremely slow if we are using io_sti instead of io_stihlt.
@@ -119,7 +126,7 @@ because the range of values that can be stored in a char is -128 to 127 for a **
 - [X] day 17：Console window
 - [X] day 18：Command line (mem, clear, ls)
 - [X] day 19：Application development (support cat cmd and FAT)
-- [ ] day 20：System Call
+- [ ] day 20：System Call API
 - [ ] day 21：保护操作系统
 - [ ] day 22：C语言应用程序（修改为ELF格式）
 - [ ] 第23天：应用程序图形处理
