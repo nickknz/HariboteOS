@@ -128,6 +128,7 @@ int cmd_app(struct Console *cons, int *fat, char *cmdline) {
     if (finfo) {
         /*找到文件的情况*/
         p = (char *)memman_alloc_4k(memman, finfo->size);
+        *((int *) 0xfe8) = (int) p;
         file_load_file(finfo->clustno, finfo->size, p, fat, (char *)(ADR_DISKIMG + 0x003e00));
         set_segmdesc(gdt + 1003, finfo->size - 1, (int)p, AR_CODE32_ER);
         far_call(0, 1003 * 8);

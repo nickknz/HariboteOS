@@ -27,7 +27,7 @@ K_OBJS	:= bootpack.bin io.bin pm.bin hankaku.bin desctbl.bin graphic.bin \
 		sheet.bin window.bin timer.bin task_asm.bin task.bin console.bin  \
 		fs.bin command.bin api_asm.bin api.bin
 # Applications
-APPS	:= app/hello.hrb
+APPS	:= app/hello.hrb app/hello2.hrb
 SYS		:= haribote.sys
 IMG		:= haribote.img
 
