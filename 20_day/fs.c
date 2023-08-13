@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "fs.h"
 
 void file_read_fat(int *fat, unsigned char *img) 
@@ -28,4 +30,54 @@ void file_load_file(int clustno, int size, char *buf, int *fat, char *img)
         buf += 512;
         clustno = fat[clustno];
     }
+}
+
+struct FileInfo *file_search(char *name, struct FileInfo *finfo, int max) 
+{
+    int i, j;
+    char s[12];
+
+    /*准备文件名*/
+    for (j = 0; j < 11; j++) {
+        s[j] = ' ';
+    }
+    j = 0;
+
+    for (i = 0; name[i] != '\0'; i++) {
+        if (j > 11) {
+            return NULL;
+        }
+
+        if (name[i] == '.' && s[j] <= 'z') {
+            j = 8;
+            } else {
+                s[j] = name[i];
+                if ('a' <= s[j] && s[j] <= 'z') {
+                    // 转为大写
+                    s[j] -= 0x20;
+            }
+            j++;
+        }
+    }
+
+    // 寻找文件
+    for (i = 0; i < max;) {
+        if (finfo[i].name[0] == '\0') {
+            break;
+        }
+
+        if (!(finfo[i].type & 0x18)) {
+            for (j = 0; j < 11; j++) {
+                if (finfo[i].name[j] != s[j]) {
+                    goto next;
+                }
+            }
+            return finfo + i;        /*找到文件*/
+        }
+
+    next:
+        i++;
+    }
+
+    return NULL;
 }

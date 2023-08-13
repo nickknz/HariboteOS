@@ -119,7 +119,7 @@ because the range of values that can be stored in a char is -128 to 127 for a **
 - [X] day 17：Console window
 - [X] day 18：Command line (mem, clear, ls)
 - [X] day 19：Application development (support cat cmd and FAT)
-- [ ] day 20：API
+- [ ] day 20：System Call
 - [ ] day 21：保护操作系统
 - [ ] day 22：C语言应用程序（修改为ELF格式）
 - [ ] 第23天：应用程序图形处理
