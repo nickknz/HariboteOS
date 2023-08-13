@@ -95,44 +95,47 @@ void cmd_hlt(struct Console *cons, int *fat) {
     cons_newline(cons);
 }
 
-// int cmd_app(struct Console *cons, int *fat, char *cmdline) {
-//   struct MemMan *memman = (struct MemMan *)MEMMAN_ADDR;
-//   struct FileInfo *finfo;
-//   struct SegmentDescriptor *gdt = (struct SegmentDescriptor *)ADR_GDT;
-//   char name[18], *p;
-//   int i;
+int cmd_app(struct Console *cons, int *fat, char *cmdline) {
+    struct MemMan *memman = (struct MemMan *)MEMMAN_ADDR;
+    struct FileInfo *finfo;
+    struct SegmentDescriptor *gdt = (struct SegmentDescriptor *)ADR_GDT;
+    char name[18], *p;
+    int i;
 
-//   for (i = 0; i < 13; i++) {
-//     if (cmdline[i] <= ' ') {
-//       break;
-//     }
+    /*根据命令行生成文件名*/
+    for (i = 0; i < 13; i++) {
+        if (cmdline[i] <= ' ') {
+            break;
+        }
 
-//     name[i] = cmdline[i];
-//   }
-//   name[i] = '\0';
+        name[i] = cmdline[i];
+    }
+    name[i] = '\0'; /*暂且将文件名的后面置为0*/
 
-//   finfo = file_search(name, (struct FileInfo *)(ADR_DISKIMG + 0x002600), 224);
-//   if (finfo == NULL && name[i - 1] != '.') {
-//     name[i] = '.';
-//     name[i + 1] = 'H';
-//     name[i + 2] = 'R';
-//     name[i + 3] = 'B';
-//     name[i + 4] = '\0';
+    /*寻找文件 */
+    finfo = file_search(name, (struct FileInfo *)(ADR_DISKIMG + 0x002600), 224);
+    if (finfo == NULL && name[i - 1] != '.') {
+        /*由于找不到文件，故在文件名后面加上“.hrb”后重新寻找*/
+        name[i] = '.';
+        name[i + 1] = 'H';
+        name[i + 2] = 'R';
+        name[i + 3] = 'B';
+        name[i + 4] = '\0';
 
-//     finfo = file_search(name, (struct FileInfo *)(ADR_DISKIMG + 0x002600), 224);
-//   }
+        finfo = file_search(name, (struct FileInfo *)(ADR_DISKIMG + 0x002600), 224);
+    }
 
-//   if (finfo) {
-//     p = (char *)memman_alloc_4k(memman, finfo->size);
-//     file_load_file(finfo->clustno, finfo->size, p, fat,
-//                    (char *)(ADR_DISKIMG + 0x003e00));
-//     set_segmdesc(gdt + 1003, finfo->size - 1, (int)p, AR_CODE32_ER);
-//     far_call(0, 1003 * 8);
-//     memman_free_4k(memman, (int)p, finfo->size);
-//     cons_newline(cons);
+    if (finfo) {
+        /*找到文件的情况*/
+        p = (char *)memman_alloc_4k(memman, finfo->size);
+        file_load_file(finfo->clustno, finfo->size, p, fat, (char *)(ADR_DISKIMG + 0x003e00));
+        set_segmdesc(gdt + 1003, finfo->size - 1, (int)p, AR_CODE32_ER);
+        far_call(0, 1003 * 8);
+        memman_free_4k(memman, (int)p, finfo->size);
+        cons_newline(cons);
 
-//     return 1;
-//   }
-
-//   return 0;
-// }
+        return 1;
+    }
+    /*没有找到文件的情况*/
+    return 0;
+}

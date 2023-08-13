@@ -197,15 +197,11 @@ void cons_run_cmd(char *cmdline, struct Console *cons, int *fat,
 		cmd_ls(cons);
 	} else if (!strncmp(cmdline, "cat ", 4)) {
 		cmd_cat(cons, fat, cmdline);
-	} else if (!strcmp(cmdline, "hlt")) {
-		cmd_hlt(cons, fat);
 	} else if (cmdline[0] != '\0') {
-		/*不是命令，也不是空行*/
-		cons_putstr(cons, "Not found command.\n\n");
-
-		// if (!cmd_app(cons, fat, cmdline)) {
-		// 	cons_putstr(cons, "Not found command.\n\n");
-		// }
+		if (!cmd_app(cons, fat, cmdline)) {
+			/*不是命令，不是应用程序，也不是空行*/
+			cons_putstr(cons, "Not found command.\n\n");
+		}
 	}
 }
 
