@@ -44,10 +44,11 @@ After day 9 bootpack.c line 48, the memory 0x00001000 - 0x0009e000 is freed.
 | 0x003c0000 -            | MEMMAN_ADDR                                     | ~32 KB   |
 
 ## System Call API
-Register edx number:
-Function number 1......cons_putchar(AL = char number) 
-Function number 2......cons_putstr(EBX = string address) 
-Function number 3......cons_putnstr(EBX = string address, ECX = string length)
+| Register edx number  | function name     | Parameters                               |
+| ---------------------| ----------------- | ---------------------------------------- |
+| Function number 1    | cons_putchar      | AL = char number                         |
+| Function number 2    | cons_putstr       | EBX = string address                     | 
+| Function number 3    | cons_putnstr      | EBX = string address, ECX = string length|
 
 ## Environment set up
 Please use the x86_64-elf-gcc toolchain to compile on Mac. It can be installed using the command "brew install x86_64-elf-gcc x86_64-elf-binutils x86_64-elf-gdb".
