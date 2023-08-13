@@ -6,9 +6,9 @@
 
 asm_hrb_api:
   STI
-  PUSHAD
+  PUSHAD            ; 用于保存寄存器值的PUSH
   
-  PUSHAD
+  PUSHAD            ; 用于保存寄存器值的PUSH
   CALL    hrb_api
   ADD     ESP, 32
   POPAD

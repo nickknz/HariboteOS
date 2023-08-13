@@ -12,7 +12,7 @@
 
 void cmd_mem(struct Console *cons, unsigned int memtotal) {
     struct MemMan *memman = (struct MemMan *)MEMMAN_ADDR;
-    char s[30];
+    char s[60];
 
     sprintf(s, "total   %dMB\nfree %dKB\n\n", memtotal / (1024 * 1024), memman_total(memman) / 1024);
     cons_putstr(cons, s);
