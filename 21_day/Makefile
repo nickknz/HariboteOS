@@ -25,9 +25,10 @@ L_OBJS  := libc/stdio/stdio.bin libc/string/strcmp.bin libc/string/trim.bin libc
 K_OBJS	:= bootpack.bin io.bin pm.bin hankaku.bin desctbl.bin graphic.bin \
 		int.bin inthandler.bin fifo.bin keyboard.bin mouse.bin memory.bin \
 		sheet.bin window.bin timer.bin task_asm.bin task.bin console.bin  \
-		fs.bin command.bin api_asm.bin api.bin
+		fs.bin command.bin api_asm.bin api.bin app.bin
 # Applications
-APPS	:= app/hello.hrb app/hello2.hrb app/a.hrb
+APPS	:= app/hello.hrb app/hello2.hrb app/a.hrb app/hello3.hrb app/crack1.hrb \
+			app/crack2.hrb
 SYS		:= haribote.sys
 IMG		:= haribote.img
 
@@ -61,6 +62,14 @@ app/a.hrb: app/a_asm.o
 	$(CC) -Wall -Wno-format -Wno-unused -std=gnu99 -m32 -c app/a.c -o app/a.o
 	$(LD) -m elf_i386 --oformat binary -e main app/a.o app/a_asm.o -o app/a.hrb
 
+app/hello3.hrb: app/a_asm.o
+	$(CC) -Wall -Wno-format -Wno-unused -std=gnu99 -m32 -c app/hello3.c -o app/hello3.o
+	$(LD) -m elf_i386 --oformat binary -e main app/hello3.o app/a_asm.o -o app/hello3.hrb
+
+app/crack1.hrb: app/a_asm.o
+	$(CC) -Wall -Wno-format -Wno-unused -std=gnu99 -m32 -c app/crack1.c -o app/crack1.o
+	$(LD) -m elf_i386 --oformat binary -e main app/crack1.o app/a_asm.o -o app/crack1.hrb
+
 kernel.sys: ${K_OBJS} ${L_OBJS}
 	$(LD) -m elf_i386 --oformat binary -o kernel.sys -T kernel.ld $^
 
@@ -73,7 +82,6 @@ image: ipl.bin haribote.sys ${APPS}
 	dd if=ipl.bin of=$(IMG) bs=512 count=1 conv=notrunc
 	mcopy -i $(IMG) haribote.sys ::/
 	mcopy -i $(IMG) Makefile ::/
-	mcopy -i $(IMG) ipl.asm ::/
 	mcopy -i $(IMG) ${APPS} ::/
 
 
@@ -85,10 +93,10 @@ clean:
 	rm -rf *.obj
 	rm -rf *.lst
 	rm -rf $(IMG)
-	rm -rf $(APPS)
 	rm -rf **/**/*.bin
-	rm -rf **/*.lst
+	rm -rf app/*.hrb
 	rm -rf **/*.o
+	rm -rf **/*.lst
 
 qemu: clean all
 	$(QEMU) -fda $(IMG) $(QEMU_FLAGS)

@@ -9,6 +9,7 @@
 #include "memory.h"
 #include "sheet.h"
 #include "task.h"
+#include "app.h"
 
 void cmd_mem(struct Console *cons, unsigned int memtotal) {
     struct MemMan *memman = (struct MemMan *)MEMMAN_ADDR;
@@ -99,7 +100,8 @@ int cmd_app(struct Console *cons, int *fat, char *cmdline) {
     struct MemMan *memman = (struct MemMan *)MEMMAN_ADDR;
     struct FileInfo *finfo;
     struct SegmentDescriptor *gdt = (struct SegmentDescriptor *)ADR_GDT;
-    char name[18], *p;
+    struct Task *task = task_now();
+    char name[18], *p, *q;
     int i;
 
     /*根据命令行生成文件名*/
@@ -128,11 +130,17 @@ int cmd_app(struct Console *cons, int *fat, char *cmdline) {
     if (finfo) {
         /*找到文件的情况*/
         p = (char *)memman_alloc_4k(memman, finfo->size);
+        char *q = (char *)memman_alloc_4k(memman, 64 * 1024);
         *((int *) 0xfe8) = (int) p;
         file_load_file(finfo->clustno, finfo->size, p, fat, (char *)(ADR_DISKIMG + 0x003e00));
-        set_segmdesc(gdt + 1003, finfo->size - 1, (int)p, AR_CODE32_ER);
-        far_call(0, 1003 * 8);
-        memman_free_4k(memman, (int)p, finfo->size);
+        
+        set_segmdesc(gdt + 1003, finfo->size - 1, (int)p, AR_CODE32_ER + 0x60);
+        set_segmdesc(gdt + 1004, 64 * 1024 - 1, (int)q, AR_DATA32_RW + 0x60); // The memory for application
+
+        start_app(0, 1003 * 8, 64 * 1024, 1004 * 8, &(task->tss.esp0));
+
+        memman_free_4k(memman, (int)p, finfo->size + 6);
+        memman_free_4k(memman, (int)q, 64 * 1024);
         cons_newline(cons);
 
         return 1;

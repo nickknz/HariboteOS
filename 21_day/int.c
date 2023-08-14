@@ -7,6 +7,7 @@
 #include "io.h"
 #include "keyboard.h"
 #include "mouse.h"
+#include "console.h"
 
 void init_pic(void) {
   // 禁止所有中断
@@ -32,4 +33,13 @@ void int_handler27(int *esp) {
 	io_out8(PIC0_OCW2, 0x67);
 
 	return;
+}
+
+int *int_handler0d(int *esp) {
+  struct Console *cons = (struct Console *)*((int *)0x0fec);
+  struct Task *task = task_now();
+
+  cons_putstr(cons, "\nINT 0D:\n General Protected Exception.\n");
+
+  return &(task->tss.esp0);
 }
