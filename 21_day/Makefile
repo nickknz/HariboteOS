@@ -27,7 +27,7 @@ K_OBJS	:= bootpack.bin io.bin pm.bin hankaku.bin desctbl.bin graphic.bin \
 		sheet.bin window.bin timer.bin task_asm.bin task.bin console.bin  \
 		fs.bin command.bin api_asm.bin api.bin
 # Applications
-APPS	:= app/hello.hrb app/hello2.hrb
+APPS	:= app/hello.hrb app/hello2.hrb app/a.hrb
 SYS		:= haribote.sys
 IMG		:= haribote.img
 
@@ -52,7 +52,14 @@ hankaku.bin: ../hankaku/hankaku.asm
 	$(CC) $(CFLAGS) -c $< -o $@		
 
 %.hrb: %.asm
-	$(AS) -f bin $< -o $@
+	$(AS) -f bin $< -o $@  -l $(subst .asm,.lst,$<)
+
+app/a_asm.o:
+	$(AS) -f elf app/a_asm.asm -o app/a_asm.o
+
+app/a.hrb: app/a_asm.o
+	$(CC) -Wall -Wno-format -Wno-unused -std=gnu99 -m32 -c app/a.c -o app/a.o
+	$(LD) -m elf_i386 --oformat binary -e main app/a.o app/a_asm.o -o app/a.hrb
 
 kernel.sys: ${K_OBJS} ${L_OBJS}
 	$(LD) -m elf_i386 --oformat binary -o kernel.sys -T kernel.ld $^
@@ -80,6 +87,8 @@ clean:
 	rm -rf $(IMG)
 	rm -rf $(APPS)
 	rm -rf **/**/*.bin
+	rm -rf **/*.lst
+	rm -rf **/*.o
 
 qemu: clean all
 	$(QEMU) -fda $(IMG) $(QEMU_FLAGS)
