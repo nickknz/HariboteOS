@@ -35,11 +35,26 @@ void int_handler27(int *esp) {
 	return;
 }
 
+int *int_handler0c(int *esp) {
+  struct Console *cons = (struct Console *)*((int *)0x0fec);
+  struct Task *task = task_now();
+  char s[30];
+
+  cons_putstr(cons, "\nINT 0C:\n Stack Exception.\n");
+  sprintf(s, "EIP = %X\n", esp[11]);
+  cons_putstr(cons, s);
+
+  return &(task->tss.esp0);
+}
+
 int *int_handler0d(int *esp) {
   struct Console *cons = (struct Console *)*((int *)0x0fec);
   struct Task *task = task_now();
+  char s[30];
 
   cons_putstr(cons, "\nINT 0D:\n General Protected Exception.\n");
+  sprintf(s, "EIP = %X\n", esp[11]);
+  cons_putstr(cons, s);
 
   return &(task->tss.esp0);
 }

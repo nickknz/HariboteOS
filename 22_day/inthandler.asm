@@ -1,10 +1,30 @@
   [BITS 32]
 
-  GLOBAL asm_int_handler0d, asm_int_handler20, asm_int_handler21
-  GLOBAL asm_int_handler27, asm_int_handler2c
+  GLOBAL asm_int_handler0c, asm_int_handler0d, asm_int_handler20
+  GLOBAL asm_int_handler21, asm_int_handler27, asm_int_handler2c
 
-  EXTERN int_handler0d, int_handler20, int_handler21, int_handler27
-  EXTERN int_handler2c
+  EXTERN int_handler0c, int_handler0d, int_handler20, int_handler21
+  EXTERN int_handler27, int_handler2c
+
+asm_int_handler0c:
+  STI
+  PUSH    ES
+  PUSH    DS
+  PUSHAD
+  MOV     EAX, ESP
+  PUSH    EAX
+  MOV     AX, SS
+  MOV     DS, AX
+  MOV     ES, AX
+  CALL    int_handler0c
+  CMP     EAX, 0
+  JNE     end_app
+  POP     EAX
+  POPAD
+  POP     DS
+  POP     ES
+  ADD     ESP, 4
+  IRETD
 
 asm_int_handler0d:
   STI
@@ -18,7 +38,7 @@ asm_int_handler0d:
   MOV     ES, AX
   CALL    int_handler0d
   CMP     EAX, 0
-  JNE     .end_app
+  JNE     end_app
   POP     EAX
   POPAD
   POP     DS
@@ -26,13 +46,11 @@ asm_int_handler0d:
   ADD     ESP, 4
   IRETD
 
-.end_app:
-; 将应用程序强制结束
+end_app:
   MOV     ESP, [EAX]
   POPAD
   RET
 
-; 当操作系统活动时产生中断的情况和之前差不多
 asm_int_handler20:
   PUSH    ES
   PUSH    DS
