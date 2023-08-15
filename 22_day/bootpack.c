@@ -17,6 +17,8 @@
 #include "fs.h"
 #include "console.h"
 #include "fs.h"
+#include "console.h"
+#include "app.h"
 
 int main(void) {
   struct BootInfo *binfo = (struct BootInfo *)ADR_BOOTINFO;
@@ -33,6 +35,7 @@ int main(void) {
   int fifobuf[128], data, keycmd_buf[32];
   struct Task *task_a, *task_cons;
   int key_to = 0, key_shift = 0, key_leds = (binfo->leds >> 4) & 7, keycmd_wait = -1;
+  struct Console *cons;
 
   init_gdtidt();
   init_pic(); // GDT/IDT完成初始化，开放CPU中断
@@ -137,6 +140,15 @@ int main(void) {
       if (256 <= data && data <= 511) { /* 键盘数据*/
         // sprintf(s, "%X", data - 256);
         // put_fonts8_asc_sht(sht_back, 0, 16, COL8_FFFFFF, COL8_008484, s, 2);
+
+        if (data == 256 + 0x1d && key_shift != 0 && task_cons->tss.ss0 != 0) {  /* Shift+control */
+          cons = (struct Console *) *((int *) 0x0fec);
+          cons_putstr(cons, "\nBreak(key):\n");
+          io_cli(); /*不能在改变寄存器值时切换到其他任务*/ 
+          task_cons->tss.eax = (int) &(task_cons->tss.esp0); 
+          task_cons->tss.eip = (int) asm_end_app;
+          io_sti();
+        }
 
         if (data < 0x80 + 256) {  /*将按键编码转换为字符编码*/
           if (key_shift == 0) {

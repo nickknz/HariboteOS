@@ -1,6 +1,6 @@
   [BITS 32]
 
-  GLOBAL start_app
+  GLOBAL start_app, asm_end_app
 
 start_app:                ; void start_app(int eip, int cs, int esp, int ds, int *tss_esp0);
   PUSHAD                  ; 将32位寄存器的值全部保存起来
@@ -24,3 +24,9 @@ start_app:                ; void start_app(int eip, int cs, int esp, int ds, int
   PUSH    EAX             ; 应用程序的EIP
   RETF
 ; 应用程序结束后不会回到这里
+
+asm_end_app:
+  MOV     ESP, [EAX]
+  MOV     DWORD [EAX+4], 0
+  POPAD
+  RET

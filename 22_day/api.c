@@ -7,6 +7,7 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
   struct Task *task = task_now();
   struct Console *cons = (struct Console *)*((int *)0x0fec);
 
+  char s[12];
   if (edx == 1) {
     cons_putchar(cons, eax & 0xff, 1);
   } else if (edx == 2) {

@@ -10,6 +10,7 @@
 #include "sheet.h"
 #include "task.h"
 #include "app.h"
+#include "elf.h"
 
 void cmd_mem(struct Console *cons, unsigned int memtotal) {
     struct MemMan *memman = (struct MemMan *)MEMMAN_ADDR;
@@ -130,17 +131,36 @@ int cmd_app(struct Console *cons, int *fat, char *cmdline) {
     if (finfo) {
         /*找到文件的情况*/
         p = (char *)memman_alloc_4k(memman, finfo->size);
-        char *q = (char *)memman_alloc_4k(memman, 64 * 1024);
+        
         *((int *) 0xfe8) = (int) p;
         file_load_file(finfo->clustno, finfo->size, p, fat, (char *)(ADR_DISKIMG + 0x003e00));
-        
-        set_segmdesc(gdt + 1003, finfo->size - 1, (int)p, AR_CODE32_ER + 0x60);
-        set_segmdesc(gdt + 1004, 64 * 1024 - 1, (int)q, AR_DATA32_RW + 0x60); // The memory for application
+        Elf32_Ehdr *elfhdr = (Elf32_Ehdr *)p;
 
-        start_app(0, 1003 * 8, 64 * 1024, 1004 * 8, &(task->tss.esp0));
+        if (elf32_validate(elfhdr)) {
+            char *q = (char *)memman_alloc_4k(memman, 64 * 1024);
+            *((int *)0x0fe8) = (int)q;
 
-        memman_free_4k(memman, (int)p, finfo->size + 6);
-        memman_free_4k(memman, (int)q, 64 * 1024);
+            set_segmdesc(gdt + 1003, finfo->size - 1, (int)p, AR_CODE32_ER + 0x60);
+            set_segmdesc(gdt + 1004, 64 * 1024 - 1, (int)q, AR_DATA32_RW + 0x60); // The memory for application
+
+            for (int i = 0; i < elfhdr->e_shnum; i++) {
+                Elf32_Shdr *shdr = (Elf32_Shdr *)(p + elfhdr->e_shoff + sizeof(Elf32_Shdr) * i);
+
+                if (shdr->sh_type != SHT_PROGBITS || !(shdr->sh_flags & SHF_ALLOC)) {
+                    continue;
+                }
+
+                for (int i = 0; i < shdr->sh_size; i++) {
+                    q[shdr->sh_addr + i] = p[shdr->sh_offset + i];
+                }
+            }
+            start_app(elfhdr->e_entry, 1003 * 8, 0, 1004 * 8, &(task->tss.esp0));
+            memman_free_4k(memman, (int)q, 64 * 1024);
+        } else {
+            cons_putstr(cons, "ELF file format error.\n");
+        }
+
+        memman_free_4k(memman, (int) p, finfo->size);
         cons_newline(cons);
 
         return 1;

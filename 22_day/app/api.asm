@@ -1,7 +1,6 @@
   [BITS 32]
 
-  GLOBAL api_putchar, api_end
-  ; , api_putstr
+  GLOBAL api_putchar, api_end, api_putstr
   ; GLOBAL api_open_win, api_putstr_win, api_boxfill_win
 
 api_putchar:
@@ -14,13 +13,13 @@ api_end:
   MOV   EDX, 4
   INT   0x40
 
-; api_putstr:             ; void api_putstr(char *s);
-;   PUSH    EBX
-;   MOV     EDX, 2
-;   MOV     EBX, [ESP+8]
-;   INT     0x40
-;   POP     EBX
-;   RET
+api_putstr:             ; void api_putstr(char *s);
+  PUSH    EBX
+  MOV     EDX, 2
+  MOV     EBX, [ESP+8]  ; s
+  INT     0x40
+  POP     EBX
+  RET
 
 ; api_open_win:            ; int api_open_win(char *buf, int xsize, int ysize, int col_inv, char *title);
 ;   PUSH    EDI

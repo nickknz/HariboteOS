@@ -25,11 +25,11 @@ L_OBJS  := libc/stdio/stdio.bin libc/string/strcmp.bin libc/string/trim.bin libc
 K_OBJS	:= bootpack.bin io.bin pm.bin hankaku.bin desctbl.bin graphic.bin \
 		int.bin inthandler.bin fifo.bin keyboard.bin mouse.bin memory.bin \
 		sheet.bin window.bin timer.bin task_asm.bin task.bin console.bin  \
-		fs.bin command.bin api_asm.bin api.bin app.bin
+		fs.bin command.bin api_asm.bin api.bin app.bin elf.bin
 # Applications
 APPS	:= app/hello.hrb app/hello2.hrb app/a.hrb app/hello3.hrb app/crack1.hrb \
 			app/crack2.hrb app/crack3.hrb app/crack4.hrb app/crack5.hrb app/crack6.hrb \
-			app/bug1.hrb
+			app/bug1.hrb app/bug2.hrb app/bug3.hrb app/bug4.hrb
 SYS		:= haribote.sys
 IMG		:= haribote.img
 
