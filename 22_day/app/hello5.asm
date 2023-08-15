@@ -11,7 +11,6 @@ main:
   MOV   EDX, 4
   INT   0x40
 
-  ; .data段执行失败？
   [SECTION .data]
 msg:
   DB    "hello, world", 0x0a, 0
