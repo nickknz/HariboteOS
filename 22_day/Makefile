@@ -28,7 +28,7 @@ K_OBJS	:= bootpack.bin io.bin pm.bin hankaku.bin desctbl.bin graphic.bin \
 		fs.bin command.bin api_asm.bin api.bin app.bin
 # Applications
 APPS	:= app/hello.hrb app/hello2.hrb app/a.hrb app/hello3.hrb app/crack1.hrb \
-			app/crack2.hrb
+			app/crack2.hrb app/crack3.hrb app/crack4.hrb app/crack5.hrb app/crack6.hrb
 SYS		:= haribote.sys
 IMG		:= haribote.img
 
