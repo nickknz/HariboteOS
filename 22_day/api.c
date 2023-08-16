@@ -22,9 +22,9 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
   if (edx == 1) {
     cons_putchar(cons, eax & 0xff, 1);
   } else if (edx == 2) {
-    cons_putstr(cons, (char *)ebx + ds_base);
+    cons_putstr(cons, (char *) ebx + ds_base);
   } else if (edx == 3) {
-    cons_putnstr(cons, (char *)ebx + ds_base, ecx);
+    cons_putnstr(cons, (char *) ebx + ds_base, ecx);
   } else if (edx == 4) {
     return &(task->tss.esp0);
   } else if (edx == 5) {
@@ -36,7 +36,15 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
     sheet_slide(sht, 100, 50);
     sheet_updown(sht, 3); /*背景层高度3位于task_a之上*/
     reg[7] = (int)sht;
-  } 
+  } else if (edx == 6) {
+    sht = (struct Sheet *) ebx;
+    put_fonts8_asc(sht->buf, sht->bxsize, esi, edi, eax, (char *) (ebp + ds_base));
+    sheet_refresh(sht, esi, edi, esi + ecx * 8, edi + 16);
+  } else if (edx == 7) {
+    sht = (struct Sheet *) ebx;
+    box_fill8(sht->buf, sht->bxsize, ebp, eax, ecx, esi, edi);
+    sheet_refresh(sht, eax, ecx, esi + 1, edi + 1);
+  }
 
   return 0;
 }
