@@ -129,8 +129,8 @@ because the range of values that can be stored in a char is -128 to 127 for a **
 - [X] day 19：Application development (support cat cmd and FAT)
 - [X] day 20：System Call API
 - [X] day 21：Protection for OS memory
-- [ ] day 22：C语言应用程序（修改为ELF格式）
-- [ ] 第23天：应用程序图形处理
+- [X] day 22：Developing App with C（change to ELF file format instead of HRB）
+- [ ] day 23：应用程序图形处理
 - [ ] 第24天：窗口操作
 - [ ] 第25天：更多窗口
 - [ ] 第26天：窗口操作提速
