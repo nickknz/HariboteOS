@@ -1,7 +1,11 @@
   [BITS 32]
 
   GLOBAL api_putchar, api_end, api_putstr
-  GLOBAL api_open_win, api_putstr_win, api_boxfill_win
+  GLOBAL api_open_win, api_close_win
+  GLOBAL api_putstr_win, api_boxfill_win
+  GLOBAL api_malloc_init, api_malloc, api_free
+  GLOBAL api_point, api_refresh_win, api_line_win
+  GLOBAL api_get_key
 
 api_putchar:
   MOV   EDX, 1
@@ -74,3 +78,98 @@ api_boxfill_win:        ; void api_boxfill_win(int win, int x0, int y0, int x1, 
   POP     ESI
   POP     EDI
   RET
+
+api_malloc_init:        ; void api_malloc_init(void);
+  PUSH    EBX
+  MOV     EDX, 8
+  MOV     EBX, [CS:0x0020]  ; malloc内存空间的地址
+  MOV     EAX, EBX
+  ADD     EAX, 32*1024      ; 加上32KB
+  MOV     ECX, [CS:0x0000]  ; 数据段的大小
+  SUB     ECX, EAX
+  INT     0x40
+  POP     EBX
+  RET
+
+api_malloc:             ; void *api_malloc(int size);
+  PUSH    EBX
+  MOV     EDX, 9
+  MOV     EBX, [CS: 0x0020]
+  MOV     ECX, [ESP+8]  ; size
+  INT     0x40
+  POP     EBX
+  RET
+
+api_free:               ; void api_free(void *addr, int size);
+  PUSH    EBX
+  MOV     EDX, 10
+  MOV     EBX, [CS:0x0020]
+  MOV     EAX, [ESP+8]  ; addr
+  MOV     ECX, [ESP+12] ; size
+  INT     0x40
+  POP     EBX
+  RET
+
+; api_point:              ; void api_point(int win, int x, int y, int col);
+;   PUSH    EDI
+;   PUSH    ESI
+;   PUSH    EBX
+;   MOV     EDX, 11
+;   MOV     EBX, [ESP+16]
+;   MOV     ESI, [ESP+20]
+;   MOV     EDI, [ESP+24]
+;   MOV     EAX, [ESP+28]
+;   INT     0x40
+;   POP     EBX
+;   POP     ESI
+;   POP     EDI
+;   RET
+
+; api_refresh_win:        ; void api_refresh_win(int win, int x0, int y0, int x1, int y1);
+;   PUSH    EDI
+;   PUSH    ESI
+;   PUSH    EBX
+;   MOV     EDX, 12
+;   MOV     EBX, [ESP+16]
+;   MOV     EAX, [ESP+20]
+;   MOV     ECX, [ESP+24]
+;   MOV     ESI, [ESP+28]
+;   MOV     EDI, [ESP+32]
+;   INT     0x40
+;   POP     EBX
+;   POP     ESI
+;   POP     EDI
+;   RET
+
+; api_line_win:           ; void api_line_win(int win, int x0, int y0, int x1, int y1, int col);
+;   PUSH    EDI
+;   PUSH    ESI
+;   PUSH    EBP
+;   PUSH    EBX
+;   MOV     EDX, 13
+;   MOV     EBX, [ESP+20]
+;   MOV     EAX, [ESP+24]
+;   MOV     ECX, [ESP+28]
+;   MOV     ESI, [ESP+32]
+;   MOV     EDI, [ESP+36]
+;   MOV     EBP, [ESP+40]
+;   INT     0x40
+;   POP     EBX
+;   POP     EBP
+;   POP     ESI
+;   POP     EDI
+;   RET
+
+; api_close_win:          ; void api_close_win(int win);
+;   PUSH    EBX
+;   MOV     EDX, 14
+;   MOV     EBX, [ESP+8]
+;   INT     0x40
+;   POP     EBX
+;   RET
+
+; api_get_key:            ; int api_get_key(int mode);
+;   MOV     EDX, 15
+;   MOV     EAX, [ESP+4]
+;   INT     0x40
+;   RET
