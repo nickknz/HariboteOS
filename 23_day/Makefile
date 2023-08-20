@@ -20,7 +20,8 @@ CFLAGS += -fno-pie
 QEMU_FLAGS 	+= -no-reboot -d in_asm
 
 # C Library Objects
-L_OBJS  := libc/stdio/stdio.bin libc/string/strcmp.bin libc/string/trim.bin libc/string/strncmp.bin
+L_OBJS  := libc/stdio/stdio.bin libc/string/strcmp.bin libc/string/trim.bin libc/string/strncmp.bin \
+			libc/stdlib/rand.bin
 # Kernel Objects
 K_OBJS	:= bootpack.bin io.bin pm.bin hankaku.bin desctbl.bin graphic.bin \
 		int.bin inthandler.bin fifo.bin keyboard.bin mouse.bin memory.bin \
@@ -31,7 +32,7 @@ APPS	:= app/hello.hrb app/hello2.hrb  \
 			app/crack2.hrb app/crack3.hrb app/crack4.hrb app/crack5.hrb app/crack6.hrb \
 		    app/bug4.hrb app/hello5.hrb \
 			app/winhello.hrb app/winhelo2.hrb app/winhelo3.hrb \
-			app/star1.hrb
+			app/star1.hrb app/stars.hrb
 
 SYS		:= haribote.sys
 IMG		:= haribote.img
@@ -109,6 +110,10 @@ app/winhelo3.hrb: app/api.o
 app/star1.hrb: app/api.o
 	$(CC) -Wall -Wno-format -Wno-unused -std=gnu99 -m32 -c app/star1.c -o app/star1.o
 	$(LD) -m elf_i386 --oformat elf32-i386 -e main -pie app/star1.o app/api.o -o app/star1.hrb
+
+app/stars.hrb: app/api.o libc/stdlib/rand.bin
+	$(CC) -Wall -Wno-format -Wno-unused -std=gnu99 -I ./libc/include -m32 -c app/stars.c -o app/stars.o
+	$(LD) -m elf_i386 --oformat elf32-i386 -e main -pie app/stars.o app/api.o libc/stdlib/rand.bin -o app/stars.hrb
 
 kernel.sys: ${K_OBJS} ${L_OBJS}
 	$(LD) -m elf_i386 --oformat binary -o kernel.sys -T kernel.ld $^
