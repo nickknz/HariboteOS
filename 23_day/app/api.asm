@@ -110,20 +110,20 @@ api_free:               ; void api_free(void *addr, int size);
   POP     EBX
   RET
 
-; api_point:              ; void api_point(int win, int x, int y, int col);
-;   PUSH    EDI
-;   PUSH    ESI
-;   PUSH    EBX
-;   MOV     EDX, 11
-;   MOV     EBX, [ESP+16]
-;   MOV     ESI, [ESP+20]
-;   MOV     EDI, [ESP+24]
-;   MOV     EAX, [ESP+28]
-;   INT     0x40
-;   POP     EBX
-;   POP     ESI
-;   POP     EDI
-;   RET
+api_point:              ; void api_point(int win, int x, int y, int col);
+  PUSH    EDI
+  PUSH    ESI
+  PUSH    EBX
+  MOV     EDX, 11
+  MOV     EBX, [ESP+16] ; win
+  MOV     ESI, [ESP+20] ; x
+  MOV     EDI, [ESP+24] ; y
+  MOV     EAX, [ESP+28] ; col
+  INT     0x40
+  POP     EBX
+  POP     ESI
+  POP     EDI
+  RET
 
 ; api_refresh_win:        ; void api_refresh_win(int win, int x0, int y0, int x1, int y1);
 ;   PUSH    EDI
