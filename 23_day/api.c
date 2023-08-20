@@ -74,9 +74,13 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
     case 11:
       sht = (struct Sheet *)(ebx & 0xfffffffe);
       sht->buf[sht->bxsize * edi + esi] = eax;
-      if (!(ebx & 1)) {
+      if ((ebx & 1) == 0) {
         sheet_refresh(sht, esi, edi, esi + 1, edi + 1);
       }
+      break;
+    case 12:
+      sht = (struct Sheet *)ebx;
+      sheet_refresh(sht, eax, ecx, esi, edi);
       break;
     default:
       break;
