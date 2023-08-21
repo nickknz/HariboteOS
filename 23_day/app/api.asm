@@ -141,24 +141,24 @@ api_refresh_win:        ; void api_refresh_win(int win, int x0, int y0, int x1, 
   POP     EDI
   RET
 
-; api_line_win:           ; void api_line_win(int win, int x0, int y0, int x1, int y1, int col);
-;   PUSH    EDI
-;   PUSH    ESI
-;   PUSH    EBP
-;   PUSH    EBX
-;   MOV     EDX, 13
-;   MOV     EBX, [ESP+20]
-;   MOV     EAX, [ESP+24]
-;   MOV     ECX, [ESP+28]
-;   MOV     ESI, [ESP+32]
-;   MOV     EDI, [ESP+36]
-;   MOV     EBP, [ESP+40]
-;   INT     0x40
-;   POP     EBX
-;   POP     EBP
-;   POP     ESI
-;   POP     EDI
-;   RET
+api_line_win:           ; void api_line_win(int win, int x0, int y0, int x1, int y1, int col);
+  PUSH    EDI
+  PUSH    ESI
+  PUSH    EBP
+  PUSH    EBX
+  MOV     EDX, 13
+  MOV     EBX, [ESP+20]
+  MOV     EAX, [ESP+24]
+  MOV     ECX, [ESP+28]
+  MOV     ESI, [ESP+32]
+  MOV     EDI, [ESP+36]
+  MOV     EBP, [ESP+40]
+  INT     0x40
+  POP     EBX
+  POP     EBP
+  POP     ESI
+  POP     EDI
+  RET
 
 ; api_close_win:          ; void api_close_win(int win);
 ;   PUSH    EBX
@@ -168,8 +168,8 @@ api_refresh_win:        ; void api_refresh_win(int win, int x0, int y0, int x1, 
 ;   POP     EBX
 ;   RET
 
-; api_get_key:            ; int api_get_key(int mode);
-;   MOV     EDX, 15
-;   MOV     EAX, [ESP+4]
-;   INT     0x40
-;   RET
+api_get_key:            ; int api_get_key(int mode);
+  MOV     EDX, 15
+  MOV     EAX, [ESP+4]
+  INT     0x40
+  RET
