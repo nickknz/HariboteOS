@@ -19,7 +19,7 @@ int main() {
 //     }
 //   }
 
-//   api_close_win(win);
+  api_close_win(win);
   api_end();
 
   return 0;

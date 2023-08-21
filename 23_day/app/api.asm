@@ -160,13 +160,13 @@ api_line_win:           ; void api_line_win(int win, int x0, int y0, int x1, int
   POP     EDI
   RET
 
-; api_close_win:          ; void api_close_win(int win);
-;   PUSH    EBX
-;   MOV     EDX, 14
-;   MOV     EBX, [ESP+8]
-;   INT     0x40
-;   POP     EBX
-;   RET
+api_close_win:          ; void api_close_win(int win);
+  PUSH    EBX
+  MOV     EDX, 14
+  MOV     EBX, [ESP+8]
+  INT     0x40
+  POP     EBX
+  RET
 
 api_get_key:            ; int api_get_key(int mode);
   MOV     EDX, 15
