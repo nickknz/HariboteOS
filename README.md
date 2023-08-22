@@ -108,34 +108,34 @@ because the range of values that can be stored in a char is -128 to 127 for a **
 1. In day 15, when we are using counter to test task switching (15.5 in textbook), the screen processing will be extremely slow if we are using io_sti instead of io_stihlt.
 
 ## Project progress
-- [X] day 1：Hello world
-- [X] day 2：assembly and Makefile
-- [X] day 3：Combine C and assembly
-- [X] day 4：Show screen
-- [X] day 5：GDT/IDT
-- [X] day 6：Interrupt processing
-- [X] day 7：FIFO and mouse control
-- [X] day 8：Mouse and 32-bit mode
-- [X] day 9：Memory Management
-- [X] day 10：Processing overlap
-- [X] day 11：Improve refresh algorithm
-- [X] day 12：Timer1
-- [X] day 13：Timer2
-- [X] day 14：Keyboard Input
-- [X] day 15：Multi-task 1
-- [X] day 16：Multi-task 2
-- [X] day 17：Console window
-- [X] day 18：Command line (mem, clear, ls)
-- [X] day 19：Application development (support cat cmd and FAT)
-- [X] day 20：System Call API
-- [X] day 21：Protection for OS memory
-- [X] day 22：Developing App with C（change to ELF file format instead of HRB）
-- [ ] day 23：应用程序图形处理
-- [ ] day 24：窗口操作
-- [ ] day 25：更多窗口
-- [ ] 第26天：窗口操作提速
-- [ ] 第27天：LDT与库（未按书上处理）
-- [ ] 第28天：文件操作与文字显示（不包含日文显示部分）
+- [X] day 1: Hello world
+- [X] day 2: assembly and Makefile
+- [X] day 3: Combine C and assembly
+- [X] day 4: Show screen
+- [X] day 5: GDT/IDT
+- [X] day 6: Interrupt processing
+- [X] day 7: FIFO and mouse control
+- [X] day 8: Mouse and 32-bit mode
+- [X] day 9: Memory Management
+- [X] day 10: Processing overlap
+- [X] day 11: Improve refresh algorithm
+- [X] day 12: Timer1
+- [X] day 13: Timer2
+- [X] day 14: Keyboard Input
+- [X] day 15: Multi-task 1
+- [X] day 16: Multi-task 2
+- [X] day 17: Console window
+- [X] day 18: Command line (mem, clear, ls)
+- [X] day 19: Application development (support cat cmd and FAT)
+- [X] day 20: System Call API
+- [X] day 21: Protection for OS memory
+- [X] day 22: Developing App with C（change to ELF file format instead of HRB）
+- [X] day 23: Graphic processing application
+- [ ] day 24: 窗口操作
+- [ ] day 25: 更多窗口
+- [ ] 第26天: 窗口操作提速
+- [ ] 第27天: LDT与库（未按书上处理）
+- [ ] 第28天: 文件操作与文字显示（不包含日文显示部分）
 
 ## Welcome to ask questions
 In the process of implementation, I also encountered a lot of trouble (eg. compile error). <br>
