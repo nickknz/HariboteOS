@@ -32,7 +32,7 @@ APPS	:= app/hello.hrb app/hello2.hrb  \
 			app/crack2.hrb app/crack3.hrb app/crack4.hrb app/crack5.hrb app/crack6.hrb \
 		    app/bug4.hrb app/hello5.hrb \
 			app/winhello.hrb app/winhelo2.hrb app/winhelo3.hrb \
-			app/star1.hrb app/stars.hrb app/stars2.hrb app/lines.hrb
+			app/star1.hrb app/stars.hrb app/stars2.hrb app/lines.hrb app/walk.hrb
 
 SYS		:= haribote.sys
 IMG		:= haribote.img
@@ -122,6 +122,10 @@ app/stars2.hrb: app/api.o libc/stdlib/rand.bin
 app/lines.hrb: app/api.o
 	$(CC) -Wall -Wno-format -Wno-unused -std=gnu99 -m32 -c app/lines.c -o app/lines.o
 	$(LD) -m elf_i386 --oformat elf32-i386 -e main -pie app/lines.o app/api.o -o app/lines.hrb
+
+app/walk.hrb: app/api.o
+	$(CC) -Wall -Wno-format -Wno-unused -std=gnu99 -m32 -c app/walk.c -o app/walk.o
+	$(LD) -m elf_i386 --oformat elf32-i386 -e main -pie app/walk.o app/api.o -o app/walk.hrb
 
 kernel.sys: ${K_OBJS} ${L_OBJS}
 	$(LD) -m elf_i386 --oformat binary -o kernel.sys -T kernel.ld $^
