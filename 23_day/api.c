@@ -36,12 +36,12 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
     case 5:
       // EBX = window buf, ESI = x, EDI = y, EAX = sheet color, ECX = window name
       sht = sheet_alloc(shtctl);
-      // sht->task = task;
+      sht->task = task;
       sheet_setbuf(sht, (unsigned char *)(ebx + ds_base), esi, edi, eax);
       make_window8((unsigned char *)(ebx + ds_base), esi, edi,
                   (char *)(ecx + ds_base), 0);
       sheet_slide(sht, 100, 50);
-      sheet_updown(sht, 3);
+      sheet_updown(sht, 3);   /*图层高度为3，在task_a之上*/
       reg[7] = (int)sht;
       break;
     case 6:
