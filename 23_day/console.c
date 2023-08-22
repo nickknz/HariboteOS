@@ -36,9 +36,9 @@ void console_task(struct Sheet *sheet, unsigned int memtotal)
 
 	fifo32_init(&task->fifo, 128, fifobuf, task);
 
-	timer = timer_alloc();
-	timer_init(timer, &task->fifo, 1);
-	timer_set_timer(timer, 50);
+	cons.timer = timer_alloc();
+	timer_init(cons.timer, &task->fifo, 1);
+	timer_set_timer(cons.timer, 50);
 
 	file_read_fat(fat, (unsigned char *)(ADR_DISKIMG + 0x000200));
 
@@ -54,51 +54,51 @@ void console_task(struct Sheet *sheet, unsigned int memtotal)
 		} else {
 			i = fifo32_get(&task->fifo);
 			io_sti();
-			if (i <= 1) { /*光标用定时器*/
+			if (i <= 1) { /* 光标用定时器 */
 				if (i != 0) {
-					timer_init(timer, &task->fifo, 0); /*下次置0 */
+					timer_init(cons.timer, &task->fifo, 0); /* 下次置0 */
 					if (cons.cur_c >= 0) {
 						cons.cur_c = COL8_FFFFFF;
 					}
 				} else {
-					timer_init(timer, &task->fifo, 1); /*下次置1 */
+					timer_init(cons.timer, &task->fifo, 1); /* 下次置1 */
 					if (cons.cur_c >= 0) {
 						cons.cur_c = COL8_000000;
 					}
 				}
-				timer_set_timer(timer, 50);
+				timer_set_timer(cons.timer, 50);
 			} else if (i == 2) {  // 窗口光标ON
 				cons.cur_c = COL8_FFFFFF;
 			} else if (i == 3) {  // 窗口光标OFF
 				box_fill8(sheet->buf, sheet->bxsize, COL8_000000, cons.cur_x, cons.cur_y, cons.cur_x + 7, cons.cur_y + 15);
 				cons.cur_c = -1;
-			} else if (256 <= i && i <= 511) { /*键盘数据(通过任务A) */ 
-				if (i == 8 + 256) {   /*退格键*/
+			} else if (256 <= i && i <= 511) { /* 键盘数据(通过任务A) */ 
+				if (i == 8 + 256) {   /* 退格键 */
 					if (cons.cur_x > 16) {
-						/*用空白擦除光标后将光标前移一位*/
+						/* 用空白擦除光标后将光标前移一位 */
 						cons_putchar(&cons, ' ', 0);
 						cons.cur_x -= 8;
 					}
 				} else if (i == 10 + 256) {   // 回车键 Enter
-					/*用空格将光标擦除*/
+					/* 用空格将光标擦除 */
 					cons_putchar(&cons, ' ', 0);
 					int len = cons.cur_x / 8 - 2;
 					cmdline[cons.cur_x / 8 - 2] = '\0';
 					char *trimed_cmdline = trim(cmdline, len);
 					cons_newline(&cons);
 					cons_run_cmd(trimed_cmdline, &cons, fat, memtotal);
-					/*显示提示符*/
+					/* 显示提示符 */
 					cons_putchar(&cons, '>', 1);
 				} else {
-					/*一般字符*/
+					/* 一般字符 */
 					if (cons.cur_x < 240) {
-						/*显示一个字符之后将光标后移一位 */
+						/* 显示一个字符之后将光标后移一位 */
 						cmdline[cons.cur_x / 8 - 2] = i - 256;
 						cons_putchar(&cons, i - 256, 1);
 					}
 				}
 			}
-			/*重新显示光标*/
+			/* 重新显示光标 */
 			if (cons.cur_c >= 0) {
 				box_fill8(sheet->buf, sheet->bxsize, cons.cur_c, cons.cur_x, cons.cur_y, cons.cur_x + 7, cons.cur_y + 15);
 			}

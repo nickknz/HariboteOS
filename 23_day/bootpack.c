@@ -123,7 +123,7 @@ int main(void) {
   fifo32_put(&keycmd, KEYCMD_LED); 
   fifo32_put(&keycmd, key_leds);
 
-  *((int *)0x0fe4) = (int)shtctl;
+  *((int *) 0x0fe4) = (int)shtctl;
 
   for (;;) {
     if (fifo32_status(&keycmd) > 0 && keycmd_wait < 0) {

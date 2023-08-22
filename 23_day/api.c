@@ -6,12 +6,13 @@
 #include "sheet.h"
 #include "task.h"
 #include "window.h"
+#include "io.h"
 
 int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int eax) {
   int ds_base = *((int *) 0x0fe8);   // code segement address
   struct Task *task = task_now();
-  struct Console *cons = (struct Console *)*((int *)0x0fec);
-  struct Shtctl *shtctl = (struct Shtctl *)*((int *)0x0fe4);
+  struct Console *cons = (struct Console *)*((int *) 0x0fec);
+  struct Shtctl *shtctl = (struct Shtctl *)*((int *) 0x0fe4);
   struct Sheet *sht;
   char s[12];
   int *reg = &eax + 1;    /* eax后面的地址*/
@@ -91,6 +92,40 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
       break;
     case 14:
       sheet_free((struct Sheet *) ebx);
+      break;
+    case 15:
+      for (;;) {
+        io_cli();
+
+        if (!fifo32_status(&task->fifo)) {
+          if (eax != 0) {
+            task_sleep(task);   /* FIFO为空，休眠并等待 */
+          } else {
+            io_sti();
+            reg[7] = -1;
+            return 0;
+          }
+        }
+
+        int data = fifo32_get(&task->fifo);
+        io_sti();
+        if (data <= 1) {  /*光标用定时器*/
+          /*应用程序运行时不需要显示光标，因此总是将下次显示用的值置为1*/
+          timer_init(cons->timer, &task->fifo, 1);    /*下次置为1*/
+          timer_set_timer(cons->timer, 50);
+        }
+        if (data == 2) {  /*光标ON */
+          cons->cur_c = COL8_FFFFFF;
+        }
+        if (data == 3) {  /*光标OFF */
+          cons->cur_c = -1;
+        }
+        if (256 <= data && data <= 511) { /*键盘数据(通过任务A)*/
+          reg[7] = data - 256;
+          return 0;
+        }
+      }
+
       break;
     default:
       break;

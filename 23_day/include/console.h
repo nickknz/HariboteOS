@@ -6,6 +6,7 @@
 struct Console {
   struct Sheet *sheet;
   int cur_x, cur_y, cur_c;
+  struct Timer *timer;
 };
 
 void console_task(struct Sheet *sheet, unsigned int memtotal);
