@@ -29,6 +29,7 @@ int main(void) {
   unsigned int memtotal;
   struct Shtctl *shtctl;
   struct Sheet *sht_back, *sht_mouse, *sht_win, *sht_cons;
+  struct Sheet *sht = NULL;
   unsigned char *buf_back, buf_mouse[256], *buf_win, *buf_cons;
   struct Timer *timer;
   struct FIFO32 fifo, keycmd;
@@ -36,6 +37,7 @@ int main(void) {
   struct Task *task_a, *task_cons;
   int key_to = 0, key_shift = 0, key_leds = (binfo->leds >> 4) & 7, keycmd_wait = -1;
   struct Console *cons;
+  int x, y, mmx = -1, mmy = -1;
 
   init_gdtidt();
   init_pic(); // GDT/IDT完成初始化，开放CPU中断
@@ -142,6 +144,10 @@ int main(void) {
       if (256 <= data && data <= 511) { /* 键盘数据*/
         // sprintf(s, "%X", data - 256);
         // put_fonts8_asc_sht(sht_back, 0, 16, COL8_FFFFFF, COL8_008484, s, 2);
+
+        // if (data == 256 + 0x2a && shtctl->top > 2) { // shift
+        //   sheet_updown(shtctl->sheets[1], shtctl->top - 1);
+        // }
 
         if (data == 256 + 0x1d && key_shift != 0 && task_cons->tss.ss0 != 0) {  /* Shift+control */
           cons = (struct Console *) *((int *) 0x0fec);
@@ -293,8 +299,36 @@ int main(void) {
           sheet_slide(sht_mouse, mx, my);
 
           if ((mdec.btn & 0x01) != 0) {
-            /* 按下左键、移动sht_win */ 
-            sheet_slide(sht_win, mx - 80, my - 8);
+            /* 按下左键 */ 
+            if (mmx < 0) {
+              /*如果处于通常模式*/
+              /*按照从上到下的顺序寻找鼠标所指向的图层*/
+              for (int j = shtctl->top - 1; j > 0; --j) {
+                sht = shtctl->sheets[j];
+                x = mx - sht->vx0;
+                y = my - sht->vy0;
+                if (0 <= x && x < sht->bxsize && 0 <= y && y < sht->bxsize) {
+                  if (sht->buf[y * sht->bxsize + x] != sht->col_inv) {
+                    sheet_updown(sht, shtctl->top - 1);
+                    if (3 <= x && x < sht->bxsize - 3 && 3 <= y && y < 21) {
+                      mmx = mx;   /*进入窗口移动模式*/
+                      mmy = my;
+                    }
+                    break;
+                  }
+                }
+              }
+            } else {
+              /*如果处于窗口移动模式*/
+              x = mx - mmx;   /*计算鼠标的移动距离*/
+              y = my - mmy;
+              sheet_slide(sht, sht->vx0 + x, sht->vy0 + y);
+              mmx = mx;       /*更新为移动后的坐标*/
+              mmy = my;
+            }
+          } else {
+            /*没有按下左键*/
+            mmx = -1;   /*返回通常模式*/
           }
         }
       } else if (data <= 1) { /* 光标用定时器*/
