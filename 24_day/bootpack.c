@@ -29,13 +29,13 @@ int main(void) {
   unsigned int memtotal;
   struct Shtctl *shtctl;
   struct Sheet *sht_back, *sht_mouse, *sht_win, *sht_cons;
-  struct Sheet *sht = NULL;
+  struct Sheet *sht = NULL, *key_win;
   unsigned char *buf_back, buf_mouse[256], *buf_win, *buf_cons;
   struct Timer *timer;
   struct FIFO32 fifo, keycmd;
   int fifobuf[128], data, keycmd_buf[32];
   struct Task *task_a, *task_cons;
-  int key_to = 0, key_shift = 0, key_leds = (binfo->leds >> 4) & 7, keycmd_wait = -1;
+  int key_shift = 0, key_leds = (binfo->leds >> 4) & 7, keycmd_wait = -1;
   struct Console *cons;
   int x, y, mmx = -1, mmy = -1;
 
@@ -121,6 +121,10 @@ int main(void) {
 	sheet_updown(sht_win,   2);
 	sheet_updown(sht_mouse, 3);
 
+  key_win = sht_win;
+  sht_cons->task = task_cons;
+  sht_cons->flags |= 0x20;      /*有光标*/
+
   /*为了避免和键盘当前状态冲突，在一开始先进行设置*/ 
   fifo32_put(&keycmd, KEYCMD_LED); 
   fifo32_put(&keycmd, key_leds);
@@ -141,13 +145,13 @@ int main(void) {
     } else {
       data = fifo32_get(&fifo);
       io_sti();
+      if (key_win->flags == 0) {        /*输入窗口被关闭*/
+        key_win = shtctl->sheets[shtctl->top - 1];
+        cursor_c = keywin_on(key_win, sht_win, cursor_c);
+      }
       if (256 <= data && data <= 511) { /* 键盘数据*/
         // sprintf(s, "%X", data - 256);
         // put_fonts8_asc_sht(sht_back, 0, 16, COL8_FFFFFF, COL8_008484, s, 2);
-
-        // if (data == 256 + 0x2a && shtctl->top > 2) { // shift
-        //   sheet_updown(shtctl->sheets[1], shtctl->top - 1);
-        // }
 
         if (data == 256 + 0x1d && key_shift != 0 && task_cons->tss.ss0 != 0) {  /* Shift+control */
           cons = (struct Console *) *((int *) 0x0fec);
@@ -176,7 +180,7 @@ int main(void) {
         }
 
         if (s[0] != 0) { /* 一般字符 */
-          if (key_to == 0) { // 发送给任务A
+          if (key_win == sht_win) { // 发送给任务A
             if (cursor_x < 128) {
               /*显示一个字符之后将光标后移一位*/
               s[1] = 0;
@@ -188,7 +192,7 @@ int main(void) {
           }
         }
         if (data == 256 + 0x0e) {/*退格键 */ 
-          if (key_to == 0) {  /*发送给任务A */
+          if (key_win == sht_win) {  /*发送给任务A */
             if (cursor_x > 8) {
               /* 用空格键把光标消去后，后移1次光标 */
               put_fonts8_asc_sht(sht_win, cursor_x, 28, COL8_000000, COL8_FFFFFF, " ", 1);
@@ -198,31 +202,22 @@ int main(void) {
             fifo32_put(&task_cons->fifo, 8 + 256);
           }
         }
-        if (data == 256 + 0x0f) { /* Tab键 */
-					if (key_to == 0) {
-						key_to = 1;
-						make_window_title8(buf_win,  sht_win->bxsize,  "task_a",  0);
-						make_window_title8(buf_cons, sht_cons->bxsize, "console", 1);
-            cursor_c = -1; // 不显示光标
-            box_fill8(sht_win->buf, sht_win->bxsize, COL8_FFFFFF, cursor_x, 28, cursor_x + 7, 43);
-            fifo32_put(&task_cons->fifo, 2); // 命令行窗口光标ON
-					} else {
-						key_to = 0;
-						make_window_title8(buf_win,  sht_win->bxsize,  "task_a",  1);
-						make_window_title8(buf_cons, sht_cons->bxsize, "console", 0);
-            cursor_c = COL8_000000;          // 显示光标
-            fifo32_put(&task_cons->fifo, 3); // 命令行窗口光标OFF
-					}
-					sheet_refresh(sht_win,  0, 0, sht_win->bxsize,  21);
-					sheet_refresh(sht_cons, 0, 0, sht_cons->bxsize, 21);
-				}
 
-        // 回车键
-        if (data == 256 + 0x1c) {   
-          if (key_to != 0) {        /*发送至命令行窗口*/
+        if (data == 256 + 0x1c) {  // 回车键
+          if (key_win != sht_win) {        /*发送至命令行窗口*/
             fifo32_put(&task_cons->fifo, 10 + 256);
           }
         }
+
+        if (data == 256 + 0x0f) { /* Tab键 */
+          cursor_c = keywin_off(key_win, sht_win, cursor_c, cursor_x);
+          int j = key_win->height - 1;
+          if (j == 0) {
+            j = shtctl->top - 1;
+          }
+          key_win = shtctl->sheets[j];
+          cursor_c = keywin_on(key_win, sht_win, cursor_c);
+				}
 
         // 左Shift按下
         if (data == 256 + 0x2a) {
@@ -317,7 +312,7 @@ int main(void) {
                     if (sht->bxsize - 21 <= x && x < sht->bxsize - 5 &&
                         5 <= y && y < 19) {
                       /*点击“×”按钮*/
-                      if (sht->task != 0) {  /*该窗口是否为应用程序窗口?*/
+                      if ((sht->flags & 0x10) != 0) {  /*该窗口是否为应用程序窗口?*/
                         cons = (struct Console *)*((int *) 0x0fec);
                         cons_putstr(cons, "\nBreak(mouse) :\n");
                         io_cli(); /*强制结束处理中禁止切换任务*/

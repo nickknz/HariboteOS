@@ -7,8 +7,7 @@
 struct TaskCtl *taskctl;
 struct Timer *task_timer;
 
-struct Task *task_init(struct MemMan *memman)
-{
+struct Task *task_init(struct MemMan *memman) {
   int i;
   struct Task *task, *idle;
   struct SegmentDescriptor *gdt = (struct SegmentDescriptor *) ADR_GDT;
@@ -49,8 +48,7 @@ struct Task *task_init(struct MemMan *memman)
   return task;
 }
 
-struct Task *task_alloc(void)
-{
+struct Task *task_alloc(void) {
   int i;
   struct Task *task;
   for (i = 0; i < MAX_TASKS; i++) {
@@ -138,14 +136,12 @@ void task_sleep(struct Task *task) {
   }
 }
 
-struct Task *task_now(void)
-{
+struct Task *task_now(void) {
     struct TaskLevel *tl = &taskctl->level[taskctl->now_lv];
     return tl->tasks[tl->now];
 }
 
-void task_add(struct Task *task)
-{
+void task_add(struct Task *task) {
   struct TaskLevel *tl = &taskctl->level[task->level]; 
   tl->tasks[tl->running] = task;
   tl->running++;
@@ -183,8 +179,7 @@ void task_remove(struct Task *task) {
   return;
 }
 
-void task_switchsub(void) 
-{
+void task_switchsub(void) {
   int i;
   /*寻找最上层的LEVEL */
   for (i = 0; i < MAX_TASKLEVELS; i++) {
@@ -197,8 +192,7 @@ void task_switchsub(void)
   taskctl->lv_change = 0;
 }
 
-void task_idle(void)
-{
+void task_idle(void) {
   for (;;) {
     io_hlt();
   }  
