@@ -130,7 +130,7 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
       break;
     case 16:
       reg[7] = (int) timer_alloc();
-      // ((struct Timer *)reg[7])->flags2 = 1;
+      ((struct Timer *)reg[7])->flags2 = 1;
       break;
     case 17:
       timer_init((struct Timer *) ebx, &task->fifo, eax + 256);
