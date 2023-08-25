@@ -63,7 +63,7 @@ void timer_set_timer(struct Timer *timer, unsigned int timeout) {
     return;
   }
 
-  // 搜索插入未知
+  // 搜索插入位置
   for (;;) {
     s = t;
     t = t->next;
