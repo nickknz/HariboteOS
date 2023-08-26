@@ -149,7 +149,7 @@ int main(void) {
         key_win = shtctl->sheets[shtctl->top - 1];
         cursor_c = keywin_on(key_win, sht_win, cursor_c);
       }
-      if (256 <= data && data <= 511) { /* 键盘数据*/
+      if (256 <= data && data <= 511) { /*键盘数据*/
         // sprintf(s, "%X", data - 256);
         // put_fonts8_asc_sht(sht_back, 0, 16, COL8_FFFFFF, COL8_008484, s, 2);
 
@@ -191,7 +191,7 @@ int main(void) {
             fifo32_put(&task_cons->fifo, s[0] + 256);
           }
         }
-        if (data == 256 + 0x0e) {/*退格键 */ 
+        if (data == 256 + 0x0e) {/*退格键*/ 
           if (key_win == sht_win) {  /*发送给任务A */
             if (cursor_x > 8) {
               /* 用空格键把光标消去后，后移1次光标 */
@@ -209,7 +209,7 @@ int main(void) {
           }
         }
 
-        if (data == 256 + 0x0f) { /* Tab键 */
+        if (data == 256 + 0x0f) { /*Tab键*/
           cursor_c = keywin_off(key_win, sht_win, cursor_c, cursor_x);
           int j = key_win->height - 1;
           if (j == 0) {
