@@ -9,9 +9,9 @@
 #include "io.h"
 
 int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int eax) {
-  int ds_base = *((int *) 0x0fe8);   // code segement address
   struct Task *task = task_now();
-  struct Console *cons = (struct Console *)*((int *) 0x0fec);
+  int ds_base = task->ds_base;   // code segement address
+  struct Console *cons = task->cons;
   struct Shtctl *shtctl = (struct Shtctl *)*((int *) 0x0fe4);
   struct Sheet *sht;
   char s[12];

@@ -132,16 +132,17 @@ int cmd_app(struct Console *cons, int *fat, char *cmdline) {
         /*找到文件的情况*/
         p = (char *)memman_alloc_4k(memman, finfo->size);
         
-        *((int *) 0xfe8) = (int) p;
+        // *((int *) 0xfe8) = (int) p;
         file_load_file(finfo->clustno, finfo->size, p, fat, (char *)(ADR_DISKIMG + 0x003e00));
         Elf32_Ehdr *elfhdr = (Elf32_Ehdr *)p;
 
         if (elf32_validate(elfhdr)) {
             char *q = (char *)memman_alloc_4k(memman, 64 * 1024);
-            *((int *)0x0fe8) = (int)q;
-
-            set_segmdesc(gdt + 1003, finfo->size - 1, (int)p, AR_CODE32_ER + 0x60);
-            set_segmdesc(gdt + 1004, 64 * 1024 - 1, (int)q, AR_DATA32_RW + 0x60); // The memory for application
+            // *((int *)0x0fe8) = (int)q;
+            task->ds_base = (int) q;
+            // task—>sel中填入TSS的段号 * 8
+            set_segmdesc(gdt + task->sel / 8 + 1000, finfo->size - 1, (int)p, AR_CODE32_ER + 0x60);
+            set_segmdesc(gdt + task->sel / 8 + 2000, 64 * 1024 - 1, (int)q, AR_DATA32_RW + 0x60);   // The memory for application
 
             for (int i = 0; i < elfhdr->e_shnum; i++) {
                 Elf32_Shdr *shdr = (Elf32_Shdr *)(p + elfhdr->e_shoff + sizeof(Elf32_Shdr) * i);
@@ -154,7 +155,7 @@ int cmd_app(struct Console *cons, int *fat, char *cmdline) {
                     q[shdr->sh_addr + i] = p[shdr->sh_offset + i];
                 }
             }
-            start_app(elfhdr->e_entry, 1003 * 8, 0, 1004 * 8, &(task->tss.esp0));
+            start_app(elfhdr->e_entry, task->sel + 1000 * 8, 0, task->sel + 2000 * 8, &(task->tss.esp0));
 
             struct Shtctl *shtctl = (struct Shtctl *)*((int *) 0x0fe4);
             for (int i = 0; i < MAX_SHEETS; i++) {

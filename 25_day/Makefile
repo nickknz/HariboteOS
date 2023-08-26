@@ -28,9 +28,9 @@ K_OBJS	:= bootpack.bin io.bin pm.bin hankaku.bin desctbl.bin graphic.bin \
 		sheet.bin window.bin timer.bin task_asm.bin task.bin console.bin  \
 		fs.bin command.bin api_asm.bin api.bin app.bin elf.bin
 # Applications
-APPS	:= app/hello.hrb app/hello2.hrb  \
+APPS	:= app/a.hrb app/hello.hrb app/hello2.hrb app/hello3.hrb app/crack1.hrb app/bug1.hrb\
 			app/crack2.hrb app/crack3.hrb app/crack4.hrb app/crack5.hrb app/crack6.hrb \
-		    app/bug4.hrb app/hello5.hrb \
+		    app/bug2.hrb app/bug3.hrb app/bug4.hrb app/hello5.hrb \
 			app/winhello.hrb app/winhelo2.hrb app/winhelo3.hrb \
 			app/star1.hrb app/stars.hrb app/stars2.hrb app/lines.hrb app/walk.hrb app/noodle.hrb \
 			app/beepdown.hrb app/beepup.hrb app/color.hrb app/color2.hrb
@@ -64,29 +64,29 @@ hankaku.bin: ../hankaku/hankaku.asm
 app/api.o:
 	$(AS) -f elf app/api.asm -o app/api.o
 
-# app/a.hrb: app/api.o
-# 	$(CC) -Wall -Wno-format -Wno-unused -std=gnu99 -m32 -c app/a.c -o app/a.o
-# 	$(LD) -m elf_i386 --oformat binary -e main app/a.o app/api.o -o app/a.hrb
+app/a.hrb: app/api.o
+	$(CC) -Wall -Wno-format -Wno-unused -std=gnu99 -m32 -c app/a.c -o app/a.o
+	$(LD) -m elf_i386 --oformat elf32-i386 -e main -pie app/a.o app/api.o -o app/a.hrb
 
-# app/hello3.hrb: app/api.o
-# 	$(CC) -Wall -Wno-format -Wno-unused -std=gnu99 -m32 -c app/hello3.c -o app/hello3.o
-# 	$(LD) -m elf_i386 --oformat binary -e main app/hello3.o app/api.o -o app/hello3.hrb
+app/hello3.hrb: app/api.o
+	$(CC) -Wall -Wno-format -Wno-unused -std=gnu99 -m32 -c app/hello3.c -o app/hello3.o
+	$(LD) -m elf_i386 --oformat elf32-i386 -e main -pie app/hello3.o app/api.o -o app/hello3.hrb
 
-# app/crack1.hrb: app/api.o
-# 	$(CC) -Wall -Wno-format -Wno-unused -std=gnu99 -m32 -c app/crack1.c -o app/crack1.o
-# 	$(LD) -m elf_i386 --oformat binary -e main app/crack1.o app/api.o -o app/crack1.hrb
+app/crack1.hrb: app/api.o
+	$(CC) -Wall -Wno-format -Wno-unused -std=gnu99 -m32 -c app/crack1.c -o app/crack1.o
+	$(LD) -m elf_i386 --oformat elf32-i386 -e main -pie app/crack1.o app/api.o -o app/crack1.hrb
 
-# app/bug1.hrb: app/api.o
-# 	$(CC) -Wall -Wno-format -Wno-unused -std=gnu99 -m32 -c app/bug1.c -o app/bug1.o
-# 	$(LD) -m elf_i386 --oformat binary -e main app/bug1.o app/api.o -o app/bug1.hrb
+app/bug1.hrb: app/api.o
+	$(CC) -Wall -Wno-format -Wno-unused -std=gnu99 -m32 -c app/bug1.c -o app/bug1.o
+	$(LD) -m elf_i386 --oformat elf32-i386 -e main -pie app/bug1.o app/api.o -o app/bug1.hrb
 
-# app/bug2.hrb:
-# 	$(CC) -Wall -Wno-format -Wno-unused -std=gnu99 -m32 -c app/bug2.c -o app/bug2.o
-# 	$(LD) -m elf_i386 --oformat binary -e main app/bug2.o -o app/bug2.hrb
+app/bug2.hrb:
+	$(CC) -Wall -Wno-format -Wno-unused -std=gnu99 -m32 -c app/bug2.c -o app/bug2.o
+	$(LD) -m elf_i386 --oformat elf32-i386 -e main -pie app/bug2.o -o app/bug2.hrb
 
-# app/bug3.hrb: app/api.o
-# 	$(CC) -Wall -Wno-format -Wno-unused -std=gnu99 -m32 -c app/bug3.c -o app/bug3.o
-# 	$(LD) -m elf_i386 --oformat binary -e main app/bug3.o app/api.o -o app/bug3.hrb
+app/bug3.hrb: app/api.o
+	$(CC) -Wall -Wno-format -Wno-unused -std=gnu99 -m32 -c app/bug3.c -o app/bug3.o
+	$(LD) -m elf_i386 --oformat elf32-i386 -e main -pie app/bug3.o app/api.o -o app/bug3.hrb
 
 app/bug4.hrb: app/api.o
 	$(CC) -Wall -Wno-format -Wno-unused -std=gnu99 -m32 -c app/bug4.c -o app/bug4.o

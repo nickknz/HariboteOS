@@ -28,13 +28,13 @@ int main(void) {
 
   unsigned int memtotal;
   struct Shtctl *shtctl;
-  struct Sheet *sht_back, *sht_mouse, *sht_win, *sht_cons;
+  struct Sheet *sht_back, *sht_mouse, *sht_win, *sht_cons[2];
   struct Sheet *sht = NULL, *key_win;
-  unsigned char *buf_back, buf_mouse[256], *buf_win, *buf_cons;
+  unsigned char *buf_back, buf_mouse[256], *buf_win, *buf_cons[2];
   struct Timer *timer;
   struct FIFO32 fifo, keycmd;
   int fifobuf[128], data, keycmd_buf[32];
-  struct Task *task_a, *task_cons;
+  struct Task *task_a, *task_cons[2];
   int key_shift = 0, key_leds = (binfo->leds >> 4) & 7, keycmd_wait = -1;
   struct Console *cons;
   int x, y, mmx = -1, mmy = -1;
@@ -65,6 +65,7 @@ int main(void) {
   task_a = task_init(memman);
   fifo.task = task_a;
   task_run(task_a, 1, 0);
+  *((int *) 0x0fe4) = (int)shtctl;
 
   // sht_back
   sht_back = sheet_alloc(shtctl);
@@ -72,25 +73,31 @@ int main(void) {
   sheet_setbuf(sht_back, buf_back, binfo->scrnx, binfo->scrny, -1); // 没有透明色
   init_screen8(buf_back, binfo->scrnx, binfo->scrny);
 
-  /* sht_cons */
-  sht_cons = sheet_alloc(shtctl);
-  buf_cons = (unsigned char *) memman_alloc_4k(memman, 256 * 165); 
-  sheet_setbuf(sht_cons, buf_cons, 256, 165, -1); 
-  /*无透明色*/ 
-  make_window8(buf_cons, 256, 165, "console", 0);
-  make_textbox8(sht_cons, 8, 28, 240, 128, COL8_000000);
-  task_cons = task_alloc();
-  task_cons->tss.esp = memman_alloc_4k(memman, 64 * 1024) + 64 * 1024 - 12; 
-  task_cons->tss.eip = (int) &console_task;
-  task_cons->tss.es = 1 * 8;
-  task_cons->tss.cs = 2 * 8;
-  task_cons->tss.ss = 1 * 8;
-  task_cons->tss.ds = 1 * 8;
-  task_cons->tss.fs = 1 * 8;
-  task_cons->tss.gs = 1 * 8;
-  *((int *) (task_cons->tss.esp + 4)) = (int) sht_cons; 
-  *((int *) (task_cons->tss.esp + 8)) = memtotal;
-  task_run(task_cons, 2, 2); /* level=2, priority=2 */
+  // sht_cons
+  for (int i = 0; i < 2; i++) {
+    sht_cons[i] = sheet_alloc(shtctl);
+    buf_cons[i] = (unsigned char *)memman_alloc_4k(memman, 256 * 165);
+    sheet_setbuf(sht_cons[i], buf_cons[i], 256, 165, -1); // 无透明色
+    sprintf(s, "console%d", i);
+    make_window8(buf_cons[i], 256, 165, s, 0);
+    make_textbox8(sht_cons[i], 8, 28, 240, 128, COL8_000000);
+    task_cons[i] = task_alloc();
+    task_cons[i]->tss.esp = memman_alloc_4k(memman, 64 * 1024) + 64 * 1024 - 12;
+    task_cons[i]->tss.eip = (int)&console_task;
+    task_cons[i]->tss.es = 1 * 8;
+    task_cons[i]->tss.cs = 2 * 8;
+    task_cons[i]->tss.ss = 1 * 8;
+    task_cons[i]->tss.ds = 1 * 8;
+    task_cons[i]->tss.fs = 1 * 8;
+    task_cons[i]->tss.gs = 1 * 8;
+    *((int *)(task_cons[i]->tss.esp + 4)) = (int)sht_cons[i];
+    *((int *)(task_cons[i]->tss.esp + 8)) = memtotal;
+    task_run(task_cons[i], 2, 2);   /* level=2, priority=2 */
+    sht_cons[i]->task = task_cons[i];
+    sht_cons[i]->flags |= 0x20;     /*有光标*/
+    // cons_fifo[i] = (int *)memman_alloc_4k(memman, 128 * 4);
+    // fifo32_init(&task_cons[i]->fifo, 128, cons_fifo[i], task_cons[i]);
+  }
     
   // sht_win
   sht_win = sheet_alloc(shtctl);
@@ -112,24 +119,22 @@ int main(void) {
   int mx = (binfo->scrnx - 16) / 2; // 按在画面中央来计算坐标
   int my = (binfo->scrny - 28 - 16) / 2;
 
-  sheet_slide(sht_back,  0,  0);
-	sheet_slide(sht_cons, 32,  4);
-	sheet_slide(sht_win,  64, 56);
-	sheet_slide(sht_mouse, mx, my);
-	sheet_updown(sht_back,  0);
-	sheet_updown(sht_cons,  1);
-	sheet_updown(sht_win,   2);
-	sheet_updown(sht_mouse, 3);
+  sheet_slide(sht_back, 0, 0);
+  sheet_slide(sht_cons[1], 56, 6);
+  sheet_slide(sht_cons[0], 8, 2);
+  sheet_slide(sht_win,  64, 56);
+  sheet_slide(sht_mouse, mx, my);
+  sheet_updown(sht_back, 0);
+  sheet_updown(sht_cons[0], 1);
+  sheet_updown(sht_cons[1], 2);
+  sheet_updown(sht_win,   3);
+  sheet_updown(sht_mouse, 4);
 
-  key_win = sht_win;
-  sht_cons->task = task_cons;
-  sht_cons->flags |= 0x20;      /*有光标*/
+  key_win = sht_win;    
 
   /*为了避免和键盘当前状态冲突，在一开始先进行设置*/ 
   fifo32_put(&keycmd, KEYCMD_LED); 
   fifo32_put(&keycmd, key_leds);
-
-  *((int *) 0x0fe4) = (int)shtctl;
 
   for (;;) {
     if (fifo32_status(&keycmd) > 0 && keycmd_wait < 0) {
@@ -153,13 +158,15 @@ int main(void) {
         // sprintf(s, "%X", data - 256);
         // put_fonts8_asc_sht(sht_back, 0, 16, COL8_FFFFFF, COL8_008484, s, 2);
 
-        if (data == 256 + 0x1d && key_shift != 0 && task_cons->tss.ss0 != 0) {  /* Shift+control */
-          cons = (struct Console *) *((int *) 0x0fec);
-          cons_putstr(cons, "\nBreak(key):\n");
-          io_cli(); /*不能在改变寄存器值时切换到其他任务*/ 
-          task_cons->tss.eax = (int) &(task_cons->tss.esp0); 
-          task_cons->tss.eip = (int) asm_end_app;
-          io_sti();
+        if (data == 256 + 0x1d && key_shift != 0) {   /* Shift+control */
+          struct Task *task = key_win->task;
+          if (task && task->tss.ss0 != 0) {
+            cons_putstr(task->cons, "\nBreak(key):\n");
+            io_cli(); /*强制结束处理时禁止任务切换*/
+            task->tss.eax = (int) &(task->tss.esp0);
+            task->tss.eip = (int) asm_end_app;
+            io_sti();
+          }
         }
 
         if (data < 0x80 + 256) {  /*将按键编码转换为字符编码*/
@@ -188,7 +195,7 @@ int main(void) {
               cursor_x += 8;
             }
           } else { /*发送给命令行窗口*/
-            fifo32_put(&task_cons->fifo, s[0] + 256);
+            fifo32_put(&key_win->task->fifo, s[0] + 256);
           }
         }
         if (data == 256 + 0x0e) {/*退格键*/ 
@@ -199,13 +206,13 @@ int main(void) {
               cursor_x -= 8;
             }
           } else {  /*发送给命令行窗口*/
-            fifo32_put(&task_cons->fifo, 8 + 256);
+            fifo32_put(&key_win->task->fifo, 8 + 256);
           }
         }
 
         if (data == 256 + 0x1c) {  // 回车键
           if (key_win != sht_win) {        /*发送至命令行窗口*/
-            fifo32_put(&task_cons->fifo, 10 + 256);
+            fifo32_put(&key_win->task->fifo, 10 + 256);
           }
         }
 
@@ -318,11 +325,11 @@ int main(void) {
                         5 <= y && y < 19) {
                       /*点击“×”按钮*/
                       if ((sht->flags & 0x10) != 0) {  /*该窗口是否为应用程序窗口?*/
-                        cons = (struct Console *)*((int *) 0x0fec);
-                        cons_putstr(cons, "\nBreak(mouse) :\n");
+                        struct Task *task = sht->task;
+                        cons_putstr(task->cons, "\nBreak(mouse) :\n");
                         io_cli(); /*强制结束处理中禁止切换任务*/
-                        task_cons->tss.eax = (int)&(task_cons->tss.esp0);
-                        task_cons->tss.eip = (int)asm_end_app;
+                        task->tss.eax = (int) &(task->tss.esp0);
+                        task->tss.eip = (int) asm_end_app;
                         io_sti();
                       }
                     }

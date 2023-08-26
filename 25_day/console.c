@@ -32,7 +32,8 @@ void console_task(struct Sheet *sheet, unsigned int memtotal)
 	struct SegmentDescriptor *gdt = (struct SegmentDescriptor *) ADR_GDT;
 	int x, y;
 
-	*((int *)0x0fec) = (int)&cons;
+	// *((int *)0x0fec) = (int)&cons;
+	task->cons = &cons;
 
 	fifo32_init(&task->fifo, 128, fifobuf, task);
 

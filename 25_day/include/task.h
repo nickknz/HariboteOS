@@ -32,6 +32,8 @@ struct Task {
   int level, priority;
   struct FIFO32 fifo;
   struct TSS32 tss;
+  struct Console *cons;
+  int ds_base;
 };
 
 struct TaskLevel {
