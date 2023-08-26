@@ -106,7 +106,7 @@ because the range of values that can be stored in a char is -128 to 127 for a **
 
 ## The bug have not fixed
 1. In day 15, when we are using counter to test task switching (15.5 in textbook), the screen processing will be extremely slow if we are using io_sti instead of io_stihlt.
-
+2. In day 25, there will be some messy graph in the top of screen when we run the second app. I guess there is something wrong when we set the second GDT for second app in cmd_app function.
 ## Project progress
 - [X] day 1: Hello world
 - [X] day 2: assembly and Makefile
