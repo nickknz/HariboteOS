@@ -42,8 +42,8 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
       sheet_setbuf(sht, (unsigned char *)(ebx + ds_base), esi, edi, eax);
       make_window8((unsigned char *)(ebx + ds_base), esi, edi,
                   (char *)(ecx + ds_base), 0);
-      sheet_slide(sht, 100, 50);
-      sheet_updown(sht, 3);   /*图层高度为3，在task_a之上*/
+      sheet_slide(sht, (shtctl->xsize - esi) / 2, (shtctl->ysize - edi) / 2);
+      sheet_updown(sht, shtctl->top); /*将窗口图层高度指定为当前鼠标所在图层的高度，鼠标移到上层*/
       reg[7] = (int)sht;
       break;
     case 6:
