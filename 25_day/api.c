@@ -16,6 +16,7 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
   struct Sheet *sht;
   char s[12];
   int *reg = &eax + 1;    /* eax后面的地址*/
+  int data;
   /*强行改写通过PUSHAD保存的值*/
   /* reg[0]: EDI, reg[1]: ESI, reg[2]: EBP, reg[3]: ESP */
   /* reg[4]: EBX, reg[5]: EDX, reg[6]: ECX, reg[7]: EAX */
@@ -140,6 +141,21 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
       break;
     case 19:
       timer_free((struct Timer *) ebx);
+      break;
+    case 20:
+      if (!eax) {
+        data = io_in8(0x61);
+        io_out8(0x61, data & 0x0d);
+      } else {
+        data = 1193180000 / eax;
+
+        io_out8(0x43, 0xb6);
+        io_out8(0x42, data & 0xff);
+        io_out8(0x42, data >> 8);
+        
+        data = io_in8(0x61);
+        io_out8(0x61, (data | 0x03) & 0x0f);
+      }
       break;
     default:
       break;

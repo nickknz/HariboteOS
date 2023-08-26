@@ -7,7 +7,7 @@
   GLOBAL api_point, api_refresh_win, api_line_win
   GLOBAL api_get_key
   GLOBAL api_alloc_timer, api_init_timer, api_set_timer, api_free_timer
-  
+  GLOBAL api_beep
 api_putchar:
   MOV   EDX, 1
   MOV   AL, [ESP+4]
@@ -204,4 +204,10 @@ api_free_timer:         ; void api_free_timer(int timer);
   MOV     EBX, [ESP+8]  ; timer
   INT     0x40
   POP     EBX
+  RET
+
+api_beep:               ; void api_beep(int tone);
+  MOV     EDX, 20
+  MOV     EAX, [ESP+4]  ; tone
+  INT     0x40
   RET

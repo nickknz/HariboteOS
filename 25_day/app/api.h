@@ -27,4 +27,6 @@ void api_init_timer(int timer, int data);
 void api_set_timer(int timer, int time);
 void api_free_timer(int timer);
 
+void api_beep(int tone);
+
 #endif // U_API_H
