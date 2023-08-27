@@ -28,12 +28,11 @@ int main(void) {
 
   unsigned int memtotal;
   struct Shtctl *shtctl;
-  struct Sheet *sht_back, *sht_mouse, *sht_win, *sht_cons[2];
+  struct Sheet *sht_back, *sht_mouse, *sht_cons[2];
   struct Sheet *sht = NULL, *key_win;
-  unsigned char *buf_back, buf_mouse[256], *buf_win, *buf_cons[2];
-  struct Timer *timer;
+  unsigned char *buf_back, buf_mouse[256], *buf_cons[2];
   struct FIFO32 fifo, keycmd;
-  int fifobuf[128], data, keycmd_buf[32];
+  int fifobuf[128], data, keycmd_buf[32], *cons_fifo[2];
   struct Task *task_a, *task_cons[2];
   int key_shift = 0, key_leds = (binfo->leds >> 4) & 7, keycmd_wait = -1;
   struct Console *cons;
@@ -95,22 +94,9 @@ int main(void) {
     task_run(task_cons[i], 2, 2);   /* level=2, priority=2 */
     sht_cons[i]->task = task_cons[i];
     sht_cons[i]->flags |= 0x20;     /*有光标*/
-    // cons_fifo[i] = (int *)memman_alloc_4k(memman, 128 * 4);
-    // fifo32_init(&task_cons[i]->fifo, 128, cons_fifo[i], task_cons[i]);
+    cons_fifo[i] = (int *) memman_alloc_4k(memman, 128 * 4);
+    fifo32_init(&task_cons[i]->fifo, 128, cons_fifo[i], task_cons[i]);
   }
-    
-  // sht_win
-  sht_win = sheet_alloc(shtctl);
-  buf_win = (unsigned char *) memman_alloc_4k(memman, 160 * 52);
-  sheet_setbuf(sht_win, buf_win, 160, 52, -1);    // 没有透明色
-  make_window8(buf_win, 160, 52, "task_a", 1);
-  make_textbox8(sht_win, 8, 28, 144, 16, COL8_FFFFFF);
-  int cursor_x, cursor_c;
-  cursor_x = 8;
-  cursor_c = COL8_FFFFFF;
-  timer = timer_alloc();
-  timer_init(timer, &fifo, 1);
-  timer_set_timer(timer, 50);
 
   // sht_mouse
   sht_mouse = sheet_alloc(shtctl);
@@ -122,15 +108,14 @@ int main(void) {
   sheet_slide(sht_back, 0, 0);
   sheet_slide(sht_cons[1], 56, 6);
   sheet_slide(sht_cons[0], 8, 2);
-  sheet_slide(sht_win,  64, 56);
   sheet_slide(sht_mouse, mx, my);
   sheet_updown(sht_back, 0);
-  sheet_updown(sht_cons[0], 1);
-  sheet_updown(sht_cons[1], 2);
-  sheet_updown(sht_win,   3);
-  sheet_updown(sht_mouse, 4);
+  sheet_updown(sht_cons[1], 1);
+  sheet_updown(sht_cons[0], 2);
+  sheet_updown(sht_mouse, 3);
 
-  key_win = sht_win;    
+  key_win = sht_cons[0];    
+  keywin_on(key_win);
 
   /*为了避免和键盘当前状态冲突，在一开始先进行设置*/ 
   fifo32_put(&keycmd, KEYCMD_LED); 
@@ -152,7 +137,7 @@ int main(void) {
       io_sti();
       if (key_win->flags == 0) {        /*输入窗口被关闭*/
         key_win = shtctl->sheets[shtctl->top - 1];
-        cursor_c = keywin_on(key_win, sht_win, cursor_c);
+        keywin_on(key_win);
       }
       if (256 <= data && data <= 511) { /*键盘数据*/
         // sprintf(s, "%X", data - 256);
@@ -186,44 +171,26 @@ int main(void) {
           }
         }
 
-        if (s[0] != 0) { /* 一般字符 */
-          if (key_win == sht_win) { // 发送给任务A
-            if (cursor_x < 128) {
-              /*显示一个字符之后将光标后移一位*/
-              s[1] = 0;
-              put_fonts8_asc_sht(sht_win, cursor_x, 28, COL8_000000, COL8_FFFFFF, s, 1); 
-              cursor_x += 8;
-            }
-          } else { /*发送给命令行窗口*/
-            fifo32_put(&key_win->task->fifo, s[0] + 256);
-          }
+        if (s[0] != 0) { /*一般字符、退格键、回车键*/
+          fifo32_put(&key_win->task->fifo, s[0] + 256);
         }
+
         if (data == 256 + 0x0e) {/*退格键*/ 
-          if (key_win == sht_win) {  /*发送给任务A */
-            if (cursor_x > 8) {
-              /* 用空格键把光标消去后，后移1次光标 */
-              put_fonts8_asc_sht(sht_win, cursor_x, 28, COL8_000000, COL8_FFFFFF, " ", 1);
-              cursor_x -= 8;
-            }
-          } else {  /*发送给命令行窗口*/
-            fifo32_put(&key_win->task->fifo, 8 + 256);
-          }
+          fifo32_put(&key_win->task->fifo, 8 + 256);
         }
 
         if (data == 256 + 0x1c) {  // 回车键
-          if (key_win != sht_win) {        /*发送至命令行窗口*/
-            fifo32_put(&key_win->task->fifo, 10 + 256);
-          }
+          fifo32_put(&key_win->task->fifo, 10 + 256);
         }
 
         if (data == 256 + 0x0f) { /*Tab键*/
-          cursor_c = keywin_off(key_win, sht_win, cursor_c, cursor_x);
+          keywin_off(key_win);
           int j = key_win->height - 1;
           if (j == 0) {
             j = shtctl->top - 1;
           }
           key_win = shtctl->sheets[j];
-          cursor_c = keywin_on(key_win, sht_win, cursor_c);
+          keywin_on(key_win);
 				}
 
         // 左Shift按下
@@ -271,12 +238,6 @@ int main(void) {
           wait_KBC_sendready();
           io_out8(PORT_KEYDAT, keycmd_wait);
         }
-        
-        /* 光标再显示 */
-        if (cursor_c >= 0) {
-          box_fill8(sht_win->buf, sht_win->bxsize, cursor_c, cursor_x, 28, cursor_x + 7, 43);
-        }
-        sheet_refresh(sht_win, cursor_x, 28, cursor_x + 8, 44);
       } else if (512 <= data && data <= 767) { /* 鼠标数据*/
         if (mouse_decode(&mdec, data - 512) != 0) {
           /* 每次鼠标移动都会收集3字节的数据 */
@@ -313,9 +274,9 @@ int main(void) {
                   if (sht->buf[y * sht->bxsize + x] != sht->col_inv) {
                     sheet_updown(sht, shtctl->top - 1);
                     if (sht != key_win) {
-                      cursor_c = keywin_off(key_win, sht_win, cursor_c, cursor_x);
+                      keywin_off(key_win);
                       key_win = sht;
-                      cursor_c = keywin_on(key_win, sht_win, cursor_c);
+                      keywin_on(key_win);
                     }
                     if (3 <= x && x < sht->bxsize - 3 && 3 <= y && y < 21) {
                       mmx = mx;   /*进入窗口移动模式*/
@@ -350,24 +311,7 @@ int main(void) {
             mmx = -1;   /*返回通常模式*/
           }
         }
-      } else if (data <= 1) { /* 光标用定时器*/
-        if (data == 1) {
-          timer_init(timer, &fifo, 0);
-          if (cursor_c >= 0) {
-            cursor_c = COL8_000000;
-          }
-        } else {
-          timer_init(timer, &fifo, 1);
-          if (cursor_c >= 0) {
-            cursor_c = COL8_FFFFFF;
-          }
-        }
-        timer_set_timer(timer, 50);
-        if (cursor_c >= 0) {
-          box_fill8(sht_win->buf, sht_win->bxsize, cursor_c, cursor_x, 28, cursor_x + 7, 43);
-          sheet_refresh(sht_win, cursor_x, 28, cursor_x + 8, 44);
-        }
-      } 
+      }
     }
   }
 

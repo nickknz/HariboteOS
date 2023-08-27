@@ -21,7 +21,7 @@ void console_task(struct Sheet *sheet, unsigned int memtotal)
 	struct Timer *timer;
 	struct Task *task = task_now();
 	struct MemMan *memman = (struct MemMan *) MEMMAN_ADDR;
-	int i, fifobuf[128], *fat = (int *)memman_alloc_4k(memman, 4 * 2880);
+	int i, *fat = (int *)memman_alloc_4k(memman, 4 * 2880);
 	struct Console cons;
 	char s[30], cmdline[30];
 	cons.sheet = sheet;
@@ -32,10 +32,7 @@ void console_task(struct Sheet *sheet, unsigned int memtotal)
 	struct SegmentDescriptor *gdt = (struct SegmentDescriptor *) ADR_GDT;
 	int x, y;
 
-	// *((int *)0x0fec) = (int)&cons;
 	task->cons = &cons;
-
-	fifo32_init(&task->fifo, 128, fifobuf, task);
 
 	cons.timer = timer_alloc();
 	timer_init(cons.timer, &task->fifo, 1);
