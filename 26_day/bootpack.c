@@ -36,7 +36,7 @@ int main(void) {
   struct Task *task_a, *task_cons[2];
   int key_shift = 0, key_leds = (binfo->leds >> 4) & 7, keycmd_wait = -1;
   struct Console *cons;
-  int x, y, mmx = -1, mmy = -1;
+  int x, y, mmx = -1, mmy = -1, mmx2 = 0, new_mx = -1, new_my = 0, new_wx = 0x7fffffff, new_wy = 0;
 
   init_gdtidt();
   init_pic(); // GDT/IDT完成初始化，开放CPU中断
@@ -131,8 +131,19 @@ int main(void) {
     }
     io_cli(); // 只是屏蔽中断，但还是会有中断发生
     if (fifo32_status(&fifo) == 0) {
-      task_sleep(task_a);
-      io_stihlt(); //允许接受中断
+      /* FIFO为空，当存在搁置的绘图操作时立即执行*/
+      if (new_mx >= 0) {
+        io_sti();
+        sheet_slide(sht_mouse, new_mx, new_my);
+        new_mx = -1;
+      } else if (new_wx != 0x7fffffff) {
+        io_sti();
+        sheet_slide(sht, new_wx, new_wy);
+        new_wx = 0x7fffffff;
+      } else {
+        task_sleep(task_a);
+        io_sti(); //允许接受中断
+      }
     } else {
       data = fifo32_get(&fifo);
       io_sti();
@@ -260,7 +271,8 @@ int main(void) {
             my = binfo->scrny - 1;
           }
 
-          sheet_slide(sht_mouse, mx, my);
+          new_mx = mx;
+          new_my = my;
 
           if ((mdec.btn & 0x01) != 0) {
             /* 按下左键 */ 
@@ -282,6 +294,8 @@ int main(void) {
                     if (3 <= x && x < sht->bxsize - 3 && 3 <= y && y < 21) {
                       mmx = mx;   /*进入窗口移动模式*/
                       mmy = my;
+                      mmx2 = sht->vx0;
+                      new_wy = sht->vy0;
                     }
                     if (sht->bxsize - 21 <= x && x < sht->bxsize - 5 &&
                         5 <= y && y < 19) {
@@ -302,14 +316,18 @@ int main(void) {
             } else {
               /*如果处于窗口移动模式*/
               x = mx - mmx;   /*计算鼠标的移动距离*/
-              y = my - mmy;
-              sheet_slide(sht, sht->vx0 + x, sht->vy0 + y);
-              mmx = mx;       /*更新为移动后的坐标*/
-              mmy = my;
+              y = my - mmy;      
+              new_wx = (mmx2 + x + 2) & ~3;
+							new_wy = new_wy + y;
+              mmy = my;       /*更新为移动后的坐标*/
             }
           } else {
             /*没有按下左键*/
             mmx = -1;   /*返回通常模式*/
+            if (new_wx != 0x7fffffff) {
+							sheet_slide(sht, new_wx, new_wy);	/* 固定图层位置 */
+							new_wx = 0x7fffffff;
+						}
           }
         }
       }

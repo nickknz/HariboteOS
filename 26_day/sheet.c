@@ -124,9 +124,9 @@ void sheet_updown(struct Sheet *sht, int height) {
   }
 }
 
-void sheet_refreshmap(struct Shtctl *ctl, int vx0, int vy0, int vx1, int vy1,
-                      int h0) {
+void sheet_refreshmap(struct Shtctl *ctl, int vx0, int vy0, int vx1, int vy1, int h0) {
   unsigned char *map = ctl->map;
+  int bx, by, vx, vy, sid4, *p;
 
   if (vx0 < 0) {
     vx0 = 0;
@@ -163,22 +163,48 @@ void sheet_refreshmap(struct Shtctl *ctl, int vx0, int vy0, int vx1, int vy1,
       by1 = sht->bysize;
     }
 
-    for (int by = by0; by < by1; by++) {
-      int vy = sht->vy0 + by;
-      for (int bx = bx0; bx < bx1; bx++) {
-        int vx = sht->vx0 + bx;
-        if (buf[by * sht->bxsize + bx] != sht->col_inv) {
-          map[vy * ctl->xsize + vx] = sid;
-        }
-      }
-    }
+    if (sht->col_inv == -1) {
+      if ((sht->vx0 & 3) == 0 && (bx0 & 3) == 0 && (bx1 & 3) == 0) {
+				/*无透明色图层专用的高速版(4字节型)*/
+				bx1 = (bx1 - bx0) / 4; /* MOV次数*/
+				sid4 = sid | sid << 8 | sid << 16 | sid << 24;
+				for (by = by0; by < by1; by++) {
+					vy = sht->vy0 + by;
+					vx = sht->vx0 + bx0;
+					p = (int *) &map[vy * ctl->xsize + vx];
+					for (bx = 0; bx < bx1; bx++) {
+						p[bx] = sid4;
+					}
+				}
+			} else {
+				/*无透明色图层专用的高速版(1字节型)*/
+				for (by = by0; by < by1; by++) {
+					vy = sht->vy0 + by;
+					for (bx = bx0; bx < bx1; bx++) {
+						vx = sht->vx0 + bx;
+						map[vy * ctl->xsize + vx] = sid;
+					}
+				}
+			}
+		} else {
+			/*有透明色图层用的普通版*/
+			for (int by = by0; by < by1; by++) {
+				int vy = sht->vy0 + by;
+				for (int bx = bx0; bx < bx1; bx++) {
+					int vx = sht->vx0 + bx;
+					if (buf[by * sht->bxsize + bx] != sht->col_inv) {
+						map[vy * ctl->xsize + vx] = sid;
+					}
+				}
+			}
+		}
   }
 }
 
-void sheet_refreshsub(struct Shtctl *ctl, int vx0, int vy0, int vx1, int vy1,
-                      int h0, int h1) {
+void sheet_refreshsub(struct Shtctl *ctl, int vx0, int vy0, int vx1, int vy1, int h0, int h1) {
   unsigned char *buf, *vram = ctl->vram, *map = ctl->map;
   struct Sheet *sht;
+  int bx, by, vx, vy;
 
   if (vx0 < 0) {
     vx0 = 0;
@@ -217,17 +243,67 @@ void sheet_refreshsub(struct Shtctl *ctl, int vx0, int vy0, int vx1, int vy1,
       by1 = sht->bysize;
     }
 
-    for (int by = by0; by < by1; by++) {
-      int vy = sht->vy0 + by;
-      for (int bx = bx0; bx < bx1; bx++) {
-        int vx = sht->vx0 + bx;
-        if (map[vy * ctl->xsize + vx] == sid) {
-          vram[vy * ctl->xsize + vx] = buf[by * sht->bxsize + bx];
+    if (!(sht->vx0 & 3)) {
+      /* 4字节型*/
+      int i = (bx0 + 3) / 4; // bx0除以4 (小数进位)
+      int i1 = bx1 / 4;      // bx1除以4 (小数舍去)
+      i1 = i1 - i;
+      int sid4 = sid | sid4 << 8 | sid4 << 16 | sid4 << 24;
+      for (by = by0; by < by1; by++) {
+        vy = sht->vy0 + by;
+        for (bx = bx0; bx < bx1; bx++) {  /*前面被4除多余的部分逐个字节写入*/
+          vx = sht->vx0 + bx;
+          if (map[vy * ctl->xsize + vx] == sid) {
+            vram[vy * ctl->xsize + vx] = buf[by * sht->bxsize + bx];
+          }
+        }
+        vx = sht->vx0 + bx;
+        int *p = (int *)&map[vy * ctl->xsize + vx];
+        int *q = (int *)&vram[vy * ctl->xsize + vx];
+        int *r = (int *)&buf[by * sht->bxsize + bx];
+        for (i = 0; i < i1; i++) {        /* 4的倍数部分*/
+          if (p[i] == sid4) {
+            q[i] = r[i];
+          } else {
+            int bx2 = bx + i * 4;
+            vx = sht->vx0 + bx2;
+            if (map[vy * ctl->xsize + vx + 0] == sid) {
+              vram[vy * ctl->xsize + vx + 0] = buf[by * sht->bxsize + bx2 + 0];
+            }
+            if (map[vy * ctl->xsize + vx + 1] == sid) {
+              vram[vy * ctl->xsize + vx + 1] = buf[by * sht->bxsize + bx2 + 1];
+            }
+            if (map[vy * ctl->xsize + vx + 2] == sid) {
+              vram[vy * ctl->xsize + vx + 2] = buf[by * sht->bxsize + bx2 + 2];
+            }
+            if (map[vy * ctl->xsize + vx + 3] == sid) {
+              vram[vy * ctl->xsize + vx + 3] = buf[by * sht->bxsize + bx2 + 3];
+            }
+          }
+        }
+
+        for (bx += i1 * 4; bx < bx1; bx++) {  /*后面被4除多余的部分逐个字节写入*/
+          vx = sht->vx0 + bx;
+          if (map[vy * ctl->xsize + vx] == sid) {
+            vram[vy * ctl->xsize + vx] = buf[by * sht->bxsize + bx];
+          }
+        }
+      }
+    } else {
+      /* 1字节型*/
+      for (by = by0; by < by1; by++) {
+        vy = sht->vy0 + by;
+        for (bx = bx0; bx < bx1; bx++) {
+          vx = sht->vx0 + bx;
+          if (map[vy * ctl->xsize + vx] == sid) {
+            vram[vy * ctl->xsize + vx] = buf[by * sht->bxsize + bx];
+          }
         }
       }
     }
   }
 }
+
 
 void sheet_refresh(struct Sheet *sht, int bx0, int by0, int bx1, int by1) {
   if (sht->height >= 0) {
