@@ -28,11 +28,11 @@ int main(void) {
 
   unsigned int memtotal;
   struct Shtctl *shtctl;
-  struct Sheet *sht_back, *sht_mouse, *sht_cons[2];
+  struct Sheet *sht_back, *sht_mouse;
   struct Sheet *sht = NULL, *key_win;
-  unsigned char *buf_back, buf_mouse[256], *buf_cons[2];
+  unsigned char *buf_back, buf_mouse[256];
   struct FIFO32 fifo, keycmd;
-  int fifobuf[128], data, keycmd_buf[32], *cons_fifo[2];
+  int fifobuf[128], data, keycmd_buf[32];
   struct Task *task_a, *task_cons[2];
   int key_shift = 0, key_leds = (binfo->leds >> 4) & 7, keycmd_wait = -1;
   struct Console *cons;
@@ -74,33 +74,7 @@ int main(void) {
   init_screen8(buf_back, binfo->scrnx, binfo->scrny);
 
   // sht_cons
-  // for (int i = 0; i < 2; i++) {
-  //   sht_cons[i] = sheet_alloc(shtctl);
-  //   buf_cons[i] = (unsigned char *)memman_alloc_4k(memman, 256 * 165);
-  //   sheet_setbuf(sht_cons[i], buf_cons[i], 256, 165, -1); // 无透明色
-  //   sprintf(s, "console%d", i);
-  //   make_window8(buf_cons[i], 256, 165, s, 0);
-  //   make_textbox8(sht_cons[i], 8, 28, 240, 128, COL8_000000);
-  //   task_cons[i] = task_alloc();
-  //   task_cons[i]->tss.esp = memman_alloc_4k(memman, 64 * 1024) + 64 * 1024 - 12;
-  //   task_cons[i]->tss.eip = (int)&console_task;
-  //   task_cons[i]->tss.es = 1 * 8;
-  //   task_cons[i]->tss.cs = 2 * 8;
-  //   task_cons[i]->tss.ss = 1 * 8;
-  //   task_cons[i]->tss.ds = 1 * 8;
-  //   task_cons[i]->tss.fs = 1 * 8;
-  //   task_cons[i]->tss.gs = 1 * 8;
-  //   *((int *)(task_cons[i]->tss.esp + 4)) = (int)sht_cons[i];
-  //   *((int *)(task_cons[i]->tss.esp + 8)) = memtotal;
-  //   task_run(task_cons[i], 2, 2);   /* level=2, priority=2 */
-  //   sht_cons[i]->task = task_cons[i];
-  //   sht_cons[i]->flags |= 0x20;     /*有光标*/
-  //   cons_fifo[i] = (int *) memman_alloc_4k(memman, 128 * 4);
-  //   fifo32_init(&task_cons[i]->fifo, 128, cons_fifo[i], task_cons[i]);
-  // }
-
-  sht_cons[0] = open_console(shtctl, memtotal);
-	sht_cons[1] = 0; /*未打开状态*/
+  key_win = open_console(shtctl, memtotal);
 
   // sht_mouse
   sht_mouse = sheet_alloc(shtctl);
@@ -110,15 +84,11 @@ int main(void) {
   int my = (binfo->scrny - 28 - 16) / 2;
 
   sheet_slide(sht_back, 0, 0);
-  // sheet_slide(sht_cons[1], 56, 6);
-  sheet_slide(sht_cons[0], 32, 4);
+  sheet_slide(key_win, 32, 4);
   sheet_slide(sht_mouse, mx, my);
   sheet_updown(sht_back, 0);
-  // sheet_updown(sht_cons[1], 1);
-  sheet_updown(sht_cons[0], 1);
-  sheet_updown(sht_mouse, 2);
-
-  key_win = sht_cons[0];    
+  sheet_updown(key_win, 1);
+  sheet_updown(sht_mouse, 2); 
   keywin_on(key_win);
 
   /*为了避免和键盘当前状态冲突，在一开始先进行设置*/ 
@@ -169,13 +139,12 @@ int main(void) {
           }
         }
 
-        if (data == 256 + 0x38 && key_shift != 0 && sht_cons[1] == 0) {   /* Shift+option */
-          sht_cons[1] = open_console(shtctl, memtotal);
-					sheet_slide(sht_cons[1], 32, 4);
-					sheet_updown(sht_cons[1], shtctl->top);
+        if (data == 256 + 0x38 && key_shift != 0) {   /* Shift+option */
 					/*自动将输入焦点切换到新打开的命令行窗口*/
 					keywin_off(key_win);
-					key_win = sht_cons[1];
+          key_win = open_console(shtctl, memtotal);
+          sheet_slide(key_win, 32, 4);
+          sheet_updown(key_win, shtctl->top);
 					keywin_on(key_win);
         }
 
