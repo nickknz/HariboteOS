@@ -36,6 +36,7 @@ int main(void) {
   struct Task *task_a, *task_cons[2];
   int key_shift = 0, key_leds = (binfo->leds >> 4) & 7, keycmd_wait = -1;
   struct Console *cons;
+  struct Task *task;
   int x, y, mmx = -1, mmy = -1, mmx2 = 0, new_mx = -1, new_my = 0, new_wx = 0x7fffffff, new_wy = 0;
 
   init_gdtidt();
@@ -294,11 +295,16 @@ int main(void) {
                         5 <= y && y < 19) {
                       /*点击“×”按钮*/
                       if ((sht->flags & 0x10) != 0) {  /*该窗口是否为应用程序窗口?*/
-                        struct Task *task = sht->task;
+                        task = sht->task;
                         cons_putstr(task->cons, "\nBreak(mouse) :\n");
                         io_cli(); /*强制结束处理中禁止切换任务*/
                         task->tss.eax = (int) &(task->tss.esp0);
                         task->tss.eip = (int) asm_end_app;
+                        io_sti();
+                      } else {                          /*命令行窗口*/
+                        task = sht->task;
+                        io_cli();
+                        fifo32_put(&task->fifo, 4);
                         io_sti();
                       }
                     }

@@ -71,6 +71,8 @@ void console_task(struct Sheet *sheet, unsigned int memtotal)
 			} else if (i == 3) {  // 窗口光标OFF
 				box_fill8(sheet->buf, sheet->bxsize, COL8_000000, cons.cur_x, cons.cur_y, cons.cur_x + 7, cons.cur_y + 15);
 				cons.cur_c = -1;
+			} else if (i == 4) {  /*点击命令行窗口的“×”按钮*/
+				cmd_exit(&cons, fat);
 			} else if (256 <= i && i <= 511) { /* 键盘数据(通过任务A) */ 
 				if (i == 8 + 256) {   /* 退格键 */
 					if (cons.cur_x > 16) {
