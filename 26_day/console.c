@@ -196,6 +196,8 @@ void cons_run_cmd(char *cmdline, struct Console *cons, int *fat,
 		cmd_ls(cons);
 	} else if (!strncmp(cmdline, "cat ", 4)) {
 		cmd_cat(cons, fat, cmdline);
+	} else if (!strcmp(cmdline, "exit")) {
+		cmd_exit(cons, fat);
 	} else if (cmdline[0] != '\0') {
 		if (!cmd_app(cons, fat, cmdline)) {
 			/*不是命令，不是应用程序，也不是空行*/
@@ -213,7 +215,8 @@ struct Sheet *open_console(struct Shtctl *shtctl, unsigned int memtotal) {
 	sheet_setbuf(sht, buf, 256, 165, -1); // 无透明色
 	make_window8(buf, 256, 165, "console", 0);
 	make_textbox8(sht, 8, 28, 240, 128, COL8_000000);
-	task->tss.esp = memman_alloc_4k(memman, 64 * 1024) + 64 * 1024 - 12;
+	task->cons_stack = memman_alloc_4k(memman, 64 * 1024);
+	task->tss.esp = task->cons_stack + 64 * 1024 - 12;
 	task->tss.eip = (int) &console_task;
 	task->tss.es = 1 * 8;
 	task->tss.cs = 2 * 8;
@@ -228,5 +231,59 @@ struct Sheet *open_console(struct Shtctl *shtctl, unsigned int memtotal) {
 	sht->flags |= 0x20;	/*有光标*/
 	fifo32_init(&task->fifo, 128, cons_fifo, task);
 	return sht;
+}
+
+// struct Task *open_cons_task(struct Sheet *sht, unsigned int memtotal) {
+//   struct MemMan *memman = (struct MemMan *)MEMMAN_ADDR;
+//   struct Task *task = task_alloc();
+//   int *cons_fifo = (int *)memman_alloc_4k(memman, 128 * 4);
+
+//   task->cons_stack = memman_alloc(memman, 64 * 1024);
+//   task->tss.esp = task->cons_stack + 64 * 1024 - 12;
+//   task->tss.eip = (int)&console_task;
+//   task->tss.es = 1 * 8;
+//   task->tss.cs = 2 * 8;
+//   task->tss.ss = 1 * 8;
+//   task->tss.ds = 1 * 8;
+//   task->tss.fs = 1 * 8;
+//   task->tss.gs = 1 * 8;
+//   *((int *)(task->tss.esp + 4)) = (int)sht;
+//   *((int *)(task->tss.esp + 8)) = memtotal;
+//   task_run(task, 2, 2);
+//   fifo32_init(&task->fifo, 128, cons_fifo, task);
+
+//   return task;
+// }
+
+// struct Sheet *open_console(struct Shtctl *shtctl, unsigned int memtotal) {
+//   struct MemMan *memman = (struct MemMan *)MEMMAN_ADDR;
+//   struct Sheet *sht = sheet_alloc(shtctl);
+//   unsigned char *buf = (unsigned char *)memman_alloc_4k(memman, 256 * 165);
+
+//   sheet_setbuf(sht, buf, 256, 165, -1);
+//   make_window8(buf, 256, 165, "console", 0);
+//   make_textbox8(sht, 8, 28, 240, 128, COL8_000000);
+
+//   sht->task = open_cons_task(sht, memtotal);
+//   sht->flags |= 0x20;
+
+//   return sht;
+// }
+
+void close_cons_task(struct Task *task) {
+  struct MemMan *memman = (struct MemMan *)MEMMAN_ADDR;
+  task_sleep(task);
+  memman_free_4k(memman, task->cons_stack, 64 * 1024);
+  memman_free_4k(memman, (int) task->fifo.buf, 128 * 4);
+  task->flags = 0;	/*用来替代task_free(task); */
+}
+
+void close_console(struct Sheet *sht) {
+  struct MemMan *memman = (struct MemMan *) MEMMAN_ADDR;
+  struct Task *task = (struct Task *) sht->task;
+
+  memman_free_4k(memman, (int)sht->buf, 256 * 165);
+  sheet_free(sht);
+  close_cons_task(task);
 }
 

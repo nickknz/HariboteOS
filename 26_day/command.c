@@ -11,6 +11,7 @@
 #include "task.h"
 #include "app.h"
 #include "elf.h"
+#include "io.h"
 
 void cmd_mem(struct Console *cons, unsigned int memtotal) {
     struct MemMan *memman = (struct MemMan *)MEMMAN_ADDR;
@@ -96,6 +97,32 @@ void cmd_hlt(struct Console *cons, int *fat) {
 
     cons_newline(cons);
 }
+
+void cmd_exit(struct Console *cons, int *fat) {
+  struct MemMan *memman = (struct MemMan *)MEMMAN_ADDR;
+  struct Task *task = task_now();
+  struct Shtctl *shtctl = (struct Shtctl *)*((int *) 0x0fe4);
+  struct FIFO32 *fifo = (struct FIFO32 *)*((int *) 0x0fec);
+
+//   if (cons->sheet) {
+//     timer_cancel(cons->timer);
+//   }
+  timer_cancel(cons->timer);
+  memman_free_4k(memman, (int) fat, 4 * 2880);
+  io_cli();
+  fifo32_put(fifo, cons->sheet - shtctl->sheets0 + 768);    /* 768〜1023 */
+//   if (cons->sheet) {
+//     fifo32_put(fifo, cons->sheet - shtctl->sheets0 + 768);
+//   } else {
+//     fifo32_put(fifo, task - taskctl->tasks0 + 1024);
+//   }
+  
+  io_sti();
+  for (;;) {
+    task_sleep(task);
+  }
+}
+
 
 int cmd_app(struct Console *cons, int *fat, char *cmdline) {
     struct MemMan *memman = (struct MemMan *)MEMMAN_ADDR;

@@ -65,7 +65,6 @@ int main(void) {
   task_a = task_init(memman);
   fifo.task = task_a;
   task_run(task_a, 1, 0);
-  *((int *) 0x0fe4) = (int)shtctl;
 
   // sht_back
   sht_back = sheet_alloc(shtctl);
@@ -95,6 +94,9 @@ int main(void) {
   fifo32_put(&keycmd, KEYCMD_LED); 
   fifo32_put(&keycmd, key_leds);
 
+  *((int *)0x0fe4) = (int)shtctl;
+  *((int *)0x0fec) = (int)&fifo;
+
   for (;;) {
     if (fifo32_status(&keycmd) > 0 && keycmd_wait < 0) {
       /*如果存在向键盘控制器发送的数据，则发送它 */ 
@@ -120,15 +122,20 @@ int main(void) {
     } else {
       data = fifo32_get(&fifo);
       io_sti();
-      if (key_win->flags == 0) {        /*输入窗口被关闭*/
-        key_win = shtctl->sheets[shtctl->top - 1];
-        keywin_on(key_win);
+
+      if (key_win != NULL && !key_win->flags) { /*窗口被关闭*/
+        if (shtctl->top == 1) {                 /*当画面上只剩鼠标和背景时*/
+          key_win = NULL;
+        } else {
+          key_win = shtctl->sheets[shtctl->top - 1];
+          keywin_on(key_win);
+        }
       }
       if (256 <= data && data <= 511) { /*键盘数据*/
-        sprintf(s, "%X", data - 256);
-        put_fonts8_asc_sht(sht_back, 0, 16, COL8_FFFFFF, COL8_008484, s, 2);
+        // sprintf(s, "%X", data - 256);
+        // put_fonts8_asc_sht(sht_back, 0, 16, COL8_FFFFFF, COL8_008484, s, 2);
 
-        if (data == 256 + 0x1d && key_shift != 0) {   /* Shift+control */
+        if (data == 256 + 0x1d && key_shift != 0 && key_win != 0) {   /* Shift+control */
           struct Task *task = key_win->task;
           if (task && task->tss.ss0 != 0) {
             cons_putstr(task->cons, "\nBreak(key):\n");
@@ -141,11 +148,15 @@ int main(void) {
 
         if (data == 256 + 0x38 && key_shift != 0) {   /* Shift+option */
 					/*自动将输入焦点切换到新打开的命令行窗口*/
-					keywin_off(key_win);
+					if (key_win) {
+            keywin_off(key_win);
+          }
+
           key_win = open_console(shtctl, memtotal);
           sheet_slide(key_win, 32, 4);
           sheet_updown(key_win, shtctl->top);
-					keywin_on(key_win);
+
+          keywin_on(key_win);
         }
 
         if (data < 0x80 + 256) {  /*将按键编码转换为字符编码*/
@@ -165,7 +176,7 @@ int main(void) {
           }
         }
 
-        if (s[0] != 0) { /*一般字符、退格键、回车键*/
+        if (s[0] != 0 && key_win != 0) { /*一般字符、退格键、回车键*/
           fifo32_put(&key_win->task->fifo, s[0] + 256);
         }
 
@@ -177,7 +188,7 @@ int main(void) {
           fifo32_put(&key_win->task->fifo, 10 + 256);
         }
 
-        if (data == 256 + 0x0f) { /*Tab键*/
+        if (data == 256 + 0x0f && key_win != 0) { /*Tab键*/
           keywin_off(key_win);
           int j = key_win->height - 1;
           if (j == 0) {
@@ -312,7 +323,12 @@ int main(void) {
 						}
           }
         }
-      }
+      } else if (768 <= data && data <= 1023) { /*命令行窗口关闭处理*/
+        close_console(shtctl->sheets0 + (data - 768));
+      } 
+      // else if (1024 <= data && data <= 2023) {
+      //   close_cons_task(taskctl->tasks0 + (data - 1024));
+      // }
     }
   }
 

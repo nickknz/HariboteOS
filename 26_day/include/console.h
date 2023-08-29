@@ -1,4 +1,5 @@
 #include "sheet.h"
+#include "timer.h"
 
 #ifndef _CONSOLE_H_
 #define _CONSOLE_H_
@@ -16,6 +17,10 @@ void cons_newline(struct Console *cons);
 void cons_run_cmd(char *cmdline, struct Console *cons, int *fat, unsigned int memtotal);
 void cons_putstr(struct Console *cons, char *s);
 void cons_putnstr(struct Console *cons, char *s, int n);
+
+struct Task *open_cons_task(struct Sheet *sht, unsigned int memtotal);
 struct Sheet *open_console(struct Shtctl *shtctl, unsigned int memtotal);
+void close_cons_task(struct Task *task);
+void close_console(struct Sheet *sht);
 
 #endif // _CONSOLE_H_
