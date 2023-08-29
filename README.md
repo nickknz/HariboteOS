@@ -133,7 +133,7 @@ because the range of values that can be stored in a char is -128 to 127 for a **
 - [X] day 23: Graphic processing application
 - [X] day 24: Switch and close windows
 - [X] day 25: Muti console windows
-- [ ] 第26天: 窗口操作提速
+- [ ] day 26: Speed up the operations of windows
 - [ ] 第27天: LDT与库（未按书上处理）
 - [ ] 第28天: 文件操作与文字显示（不包含日文显示部分）
 

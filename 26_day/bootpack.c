@@ -74,30 +74,33 @@ int main(void) {
   init_screen8(buf_back, binfo->scrnx, binfo->scrny);
 
   // sht_cons
-  for (int i = 0; i < 2; i++) {
-    sht_cons[i] = sheet_alloc(shtctl);
-    buf_cons[i] = (unsigned char *)memman_alloc_4k(memman, 256 * 165);
-    sheet_setbuf(sht_cons[i], buf_cons[i], 256, 165, -1); // 无透明色
-    sprintf(s, "console%d", i);
-    make_window8(buf_cons[i], 256, 165, s, 0);
-    make_textbox8(sht_cons[i], 8, 28, 240, 128, COL8_000000);
-    task_cons[i] = task_alloc();
-    task_cons[i]->tss.esp = memman_alloc_4k(memman, 64 * 1024) + 64 * 1024 - 12;
-    task_cons[i]->tss.eip = (int)&console_task;
-    task_cons[i]->tss.es = 1 * 8;
-    task_cons[i]->tss.cs = 2 * 8;
-    task_cons[i]->tss.ss = 1 * 8;
-    task_cons[i]->tss.ds = 1 * 8;
-    task_cons[i]->tss.fs = 1 * 8;
-    task_cons[i]->tss.gs = 1 * 8;
-    *((int *)(task_cons[i]->tss.esp + 4)) = (int)sht_cons[i];
-    *((int *)(task_cons[i]->tss.esp + 8)) = memtotal;
-    task_run(task_cons[i], 2, 2);   /* level=2, priority=2 */
-    sht_cons[i]->task = task_cons[i];
-    sht_cons[i]->flags |= 0x20;     /*有光标*/
-    cons_fifo[i] = (int *) memman_alloc_4k(memman, 128 * 4);
-    fifo32_init(&task_cons[i]->fifo, 128, cons_fifo[i], task_cons[i]);
-  }
+  // for (int i = 0; i < 2; i++) {
+  //   sht_cons[i] = sheet_alloc(shtctl);
+  //   buf_cons[i] = (unsigned char *)memman_alloc_4k(memman, 256 * 165);
+  //   sheet_setbuf(sht_cons[i], buf_cons[i], 256, 165, -1); // 无透明色
+  //   sprintf(s, "console%d", i);
+  //   make_window8(buf_cons[i], 256, 165, s, 0);
+  //   make_textbox8(sht_cons[i], 8, 28, 240, 128, COL8_000000);
+  //   task_cons[i] = task_alloc();
+  //   task_cons[i]->tss.esp = memman_alloc_4k(memman, 64 * 1024) + 64 * 1024 - 12;
+  //   task_cons[i]->tss.eip = (int)&console_task;
+  //   task_cons[i]->tss.es = 1 * 8;
+  //   task_cons[i]->tss.cs = 2 * 8;
+  //   task_cons[i]->tss.ss = 1 * 8;
+  //   task_cons[i]->tss.ds = 1 * 8;
+  //   task_cons[i]->tss.fs = 1 * 8;
+  //   task_cons[i]->tss.gs = 1 * 8;
+  //   *((int *)(task_cons[i]->tss.esp + 4)) = (int)sht_cons[i];
+  //   *((int *)(task_cons[i]->tss.esp + 8)) = memtotal;
+  //   task_run(task_cons[i], 2, 2);   /* level=2, priority=2 */
+  //   sht_cons[i]->task = task_cons[i];
+  //   sht_cons[i]->flags |= 0x20;     /*有光标*/
+  //   cons_fifo[i] = (int *) memman_alloc_4k(memman, 128 * 4);
+  //   fifo32_init(&task_cons[i]->fifo, 128, cons_fifo[i], task_cons[i]);
+  // }
+
+  sht_cons[0] = open_console(shtctl, memtotal);
+	sht_cons[1] = 0; /*未打开状态*/
 
   // sht_mouse
   sht_mouse = sheet_alloc(shtctl);
@@ -107,13 +110,13 @@ int main(void) {
   int my = (binfo->scrny - 28 - 16) / 2;
 
   sheet_slide(sht_back, 0, 0);
-  sheet_slide(sht_cons[1], 56, 6);
-  sheet_slide(sht_cons[0], 8, 2);
+  // sheet_slide(sht_cons[1], 56, 6);
+  sheet_slide(sht_cons[0], 32, 4);
   sheet_slide(sht_mouse, mx, my);
   sheet_updown(sht_back, 0);
-  sheet_updown(sht_cons[1], 1);
-  sheet_updown(sht_cons[0], 2);
-  sheet_updown(sht_mouse, 3);
+  // sheet_updown(sht_cons[1], 1);
+  sheet_updown(sht_cons[0], 1);
+  sheet_updown(sht_mouse, 2);
 
   key_win = sht_cons[0];    
   keywin_on(key_win);
@@ -152,8 +155,8 @@ int main(void) {
         keywin_on(key_win);
       }
       if (256 <= data && data <= 511) { /*键盘数据*/
-        // sprintf(s, "%X", data - 256);
-        // put_fonts8_asc_sht(sht_back, 0, 16, COL8_FFFFFF, COL8_008484, s, 2);
+        sprintf(s, "%X", data - 256);
+        put_fonts8_asc_sht(sht_back, 0, 16, COL8_FFFFFF, COL8_008484, s, 2);
 
         if (data == 256 + 0x1d && key_shift != 0) {   /* Shift+control */
           struct Task *task = key_win->task;
@@ -164,6 +167,16 @@ int main(void) {
             task->tss.eip = (int) asm_end_app;
             io_sti();
           }
+        }
+
+        if (data == 256 + 0x38 && key_shift != 0 && sht_cons[1] == 0) {   /* Shift+option */
+          sht_cons[1] = open_console(shtctl, memtotal);
+					sheet_slide(sht_cons[1], 32, 4);
+					sheet_updown(sht_cons[1], shtctl->top);
+					/*自动将输入焦点切换到新打开的命令行窗口*/
+					keywin_off(key_win);
+					key_win = sht_cons[1];
+					keywin_on(key_win);
         }
 
         if (data < 0x80 + 256) {  /*将按键编码转换为字符编码*/
