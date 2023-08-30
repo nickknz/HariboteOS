@@ -101,21 +101,21 @@ void cmd_hlt(struct Console *cons, int *fat) {
 void cmd_exit(struct Console *cons, int *fat) {
   struct MemMan *memman = (struct MemMan *)MEMMAN_ADDR;
   struct Task *task = task_now();
-  struct Shtctl *shtctl = (struct Shtctl *)*((int *) 0x0fe4);
-  struct FIFO32 *fifo = (struct FIFO32 *)*((int *) 0x0fec);
+  struct Shtctl *shtctl = (struct Shtctl *)*((int *)0x0fe4);
+  struct FIFO32 *fifo = (struct FIFO32 *)*((int *)0x0fec);
 
-//   if (cons->sheet) {
-//     timer_cancel(cons->timer);
-//   }
-  timer_cancel(cons->timer);
-  memman_free_4k(memman, (int) fat, 4 * 2880);
+  if (cons->sheet) {
+    timer_cancel(cons->timer);
+  }
+
+  memman_free_4k(memman, (int)fat, 4 * 2880);
   io_cli();
-  fifo32_put(fifo, cons->sheet - shtctl->sheets0 + 768);    /* 768〜1023 */
-//   if (cons->sheet) {
-//     fifo32_put(fifo, cons->sheet - shtctl->sheets0 + 768);
-//   } else {
-//     fifo32_put(fifo, task - taskctl->tasks0 + 1024);
-//   }
+  
+  if (cons->sheet) {
+    fifo32_put(fifo, cons->sheet - shtctl->sheets0 + 768);  /* 768~1023 */
+  } else {
+    fifo32_put(fifo, task - taskctl->tasks0 + 1024);        /*1024~2023*/
+  }
   
   io_sti();
   for (;;) {
@@ -139,17 +139,18 @@ void cmd_start(struct Console *cons, char *cmdline, int memtotal) {
     cons_newline(cons);
 }
 
-// void cmd_ncst(struct Console *cons, char *cmdline, int memtotal) {
-//   struct Task *task = open_cons_task(0, memtotal);
-//   struct FIFO32 *fifo = &task->fifo;
+void cmd_ncst(struct Console *cons, char *cmdline, int memtotal) {
+    struct Task *task = open_cons_task(0, memtotal);
+    struct FIFO32 *fifo = &task->fifo;
 
-//   for (int i = 5; cmdline[i] != '\0'; i++) {
-//     fifo32_put(fifo, cmdline[i] + 256);
-//   }
+    /*将命令行输入的字符串逐字复制到新的命令行窗口中*/
+    for (int i = 5; cmdline[i] != '\0'; i++) {
+        fifo32_put(fifo, cmdline[i] + 256);
+    }
 
-//   fifo32_put(fifo, 10 + 256);
-//   cons_newline(cons);
-// }
+    fifo32_put(fifo, 10 + 256); /*回车键*/
+    cons_newline(cons);
+}
 
 int cmd_app(struct Console *cons, int *fat, char *cmdline) {
     struct MemMan *memman = (struct MemMan *)MEMMAN_ADDR;

@@ -331,10 +331,9 @@ int main(void) {
         }
       } else if (768 <= data && data <= 1023) { /*命令行窗口关闭处理*/
         close_console(shtctl->sheets0 + (data - 768));
-      } 
-      // else if (1024 <= data && data <= 2023) {
-      //   close_cons_task(taskctl->tasks0 + (data - 1024));
-      // }
+      } else if (1024 <= data && data <= 2023) {
+        close_cons_task(taskctl->tasks0 + (data - 1024));
+      }
     }
   }
 
