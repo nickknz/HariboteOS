@@ -136,7 +136,7 @@ int main(void) {
         // sprintf(s, "%X", data - 256);
         // put_fonts8_asc_sht(sht_back, 0, 16, COL8_FFFFFF, COL8_008484, s, 2);
 
-        if (data == 256 + 0x1d && key_shift != 0 && key_win != 0) {   /* Shift+control */
+        if (data == 256 + 0x1d && key_shift != 0 && key_win != 0) {   /* Shift+control 强制关闭 */
           struct Task *task = key_win->task;
           if (task && task->tss.ss0 != 0) {
             cons_putstr(task->cons, "\nBreak(key):\n");
@@ -144,10 +144,11 @@ int main(void) {
             task->tss.eax = (int) &(task->tss.esp0);
             task->tss.eip = (int) asm_end_app;
             io_sti();
+            task_run(task, -1, 0);    /*为了确实执行结束处理，如果处于休眠状态则唤醒*/
           }
         }
 
-        if (data == 256 + 0x38 && key_shift != 0) {   /* Shift+option */
+        if (data == 256 + 0x38 && key_shift != 0) {   /* Shift+option create new console window */
 					/*自动将输入焦点切换到新打开的命令行窗口*/
 					if (key_win) {
             keywin_off(key_win);
@@ -301,6 +302,7 @@ int main(void) {
                         task->tss.eax = (int) &(task->tss.esp0);
                         task->tss.eip = (int) asm_end_app;
                         io_sti();
+                        task_run(task, -1, 0); 
                       } else {                          /*命令行窗口*/
                         task = sht->task;
                         io_cli();
