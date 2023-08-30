@@ -187,8 +187,7 @@ void cons_putnstr(struct Console *cons, char *s, int n)
 	}
 }
 
-void cons_run_cmd(char *cmdline, struct Console *cons, int *fat,
-                  unsigned int memtotal) 
+void cons_run_cmd(char *cmdline, struct Console *cons, int *fat, unsigned int memtotal) 
 {
 	if (!strcmp(cmdline, "mem")) {
 		cmd_mem(cons, memtotal);
@@ -200,7 +199,14 @@ void cons_run_cmd(char *cmdline, struct Console *cons, int *fat,
 		cmd_cat(cons, fat, cmdline);
 	} else if (!strcmp(cmdline, "exit")) {
 		cmd_exit(cons, fat);
-	} else if (cmdline[0] != '\0') {
+	} 
+	else if (!strncmp(cmdline, "start ", 6)) {
+		cmd_start(cons, cmdline, memtotal);
+	} 
+	// else if (!strncmp(cmdline, "ncst ", 5)) {
+	// 	cmd_ncst(cons, cmdline, memtotal);
+	// } 
+	else if (cmdline[0] != '\0') {
 		if (!cmd_app(cons, fat, cmdline)) {
 			/*不是命令，不是应用程序，也不是空行*/
 			cons_putstr(cons, "Not found command.\n\n");

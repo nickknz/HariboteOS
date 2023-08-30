@@ -10,7 +10,7 @@ void cmd_cat(struct Console *cons, int *fat, char *cmdline);
 void cmd_hlt(struct Console *cons, int *fat);
 int cmd_app(struct Console *cons, int *fat, char *cmdline);
 void cmd_exit(struct Console *cons, int *fat);
-// void cmd_start(struct Console *cons, char *cmdline, int memtotal);
+void cmd_start(struct Console *cons, char *cmdline, int memtotal);
 // void cmd_ncst(struct Console *cons, char *cmdline, int memtotal);
 
 #endif // _COMMAND_H_

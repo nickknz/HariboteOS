@@ -123,6 +123,33 @@ void cmd_exit(struct Console *cons, int *fat) {
   }
 }
 
+void cmd_start(struct Console *cons, char *cmdline, int memtotal) {
+    struct Shtctl *shtctl = (struct Shtctl *)*((int *) 0x0fe4);
+    struct Sheet *sht = open_console(shtctl, memtotal);
+    struct FIFO32 *fifo = &sht->task->fifo;
+
+    sheet_slide(sht, 32, 4);
+    sheet_updown(sht, shtctl->top);
+    /*将命令行输入的字符串逐字复制到新的命令行窗口中*/
+    for (int i = 6; cmdline[i] != '\0'; i++) {
+        fifo32_put(fifo, cmdline[i] + 256);
+    }
+
+    fifo32_put(fifo, 10 + 256); /*回车键*/
+    cons_newline(cons);
+}
+
+// void cmd_ncst(struct Console *cons, char *cmdline, int memtotal) {
+//   struct Task *task = open_cons_task(0, memtotal);
+//   struct FIFO32 *fifo = &task->fifo;
+
+//   for (int i = 5; cmdline[i] != '\0'; i++) {
+//     fifo32_put(fifo, cmdline[i] + 256);
+//   }
+
+//   fifo32_put(fifo, 10 + 256);
+//   cons_newline(cons);
+// }
 
 int cmd_app(struct Console *cons, int *fat, char *cmdline) {
     struct MemMan *memman = (struct MemMan *)MEMMAN_ADDR;
