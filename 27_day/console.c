@@ -35,7 +35,7 @@ void console_task(struct Sheet *sheet, unsigned int memtotal)
 
 	task->cons = &cons;
 
-	if (sheet) {
+	if (cons.sheet != 0) {
 		cons.timer = timer_alloc();
 		timer_init(cons.timer, &task->fifo, 1);
 		timer_set_timer(cons.timer, 50);
@@ -55,7 +55,7 @@ void console_task(struct Sheet *sheet, unsigned int memtotal)
 		} else {
 			i = fifo32_get(&task->fifo);
 			io_sti();
-			if (i <= 1) { /* 光标用定时器 */
+			if (i <= 1 && cons.sheet != 0) { /* 光标用定时器 */
 				if (i != 0) {
 					timer_init(cons.timer, &task->fifo, 0); /* 下次置0 */
 					if (cons.cur_c >= 0) {
@@ -71,7 +71,9 @@ void console_task(struct Sheet *sheet, unsigned int memtotal)
 			} else if (i == 2) {  // 窗口光标ON
 				cons.cur_c = COL8_FFFFFF;
 			} else if (i == 3) {  // 窗口光标OFF
-				box_fill8(sheet->buf, sheet->bxsize, COL8_000000, cons.cur_x, cons.cur_y, cons.cur_x + 7, cons.cur_y + 15);
+				if (cons.sheet != 0) {
+					box_fill8(cons.sheet->buf, cons.sheet->bxsize, COL8_000000, cons.cur_x, cons.cur_y, cons.cur_x + 7, cons.cur_y + 15);
+				}
 				cons.cur_c = -1;
 			} else if (i == 4) {  /*点击命令行窗口的“×”按钮*/
 				cmd_exit(&cons, fat);
@@ -90,7 +92,7 @@ void console_task(struct Sheet *sheet, unsigned int memtotal)
 					char *trimed_cmdline = trim(cmdline, len);
 					cons_newline(&cons);
 					cons_run_cmd(trimed_cmdline, &cons, fat, memtotal);	/*执行命令*/
-					 if (!sheet) {
+					 if (cons.sheet == 0) {
 						cmd_exit(&cons, fat);
 					}
 					/* 显示提示符 */
@@ -105,9 +107,9 @@ void console_task(struct Sheet *sheet, unsigned int memtotal)
 				}
 			}
 			/* 重新显示光标 */
-			if (sheet) {
+			if (cons.sheet != 0) {
 				if (cons.cur_c >= 0) {
-				box_fill8(sheet->buf, sheet->bxsize, cons.cur_c, cons.cur_x, cons.cur_y, cons.cur_x + 7, cons.cur_y + 15);
+					box_fill8(cons.sheet->buf, cons.sheet->bxsize, cons.cur_c, cons.cur_x, cons.cur_y, cons.cur_x + 7, cons.cur_y + 15);
 				}
 				sheet_refresh(sheet, cons.cur_x, cons.cur_y, cons.cur_x + 8, cons.cur_y + 16);
 			}

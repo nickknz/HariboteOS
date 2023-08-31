@@ -305,6 +305,10 @@ int main(void) {
                         task_run(task, -1, 0); 
                       } else {                          /*命令行窗口*/
                         task = sht->task;
+                        sheet_updown(sht, -1);          /*暂且隐藏该图层*/
+                        keywin_off(key_win);
+                        key_win = shtctl->sheets[shtctl->top - 1];
+                        keywin_on(key_win);
                         io_cli();
                         fifo32_put(&task->fifo, 4);
                         io_sti();
@@ -335,6 +339,10 @@ int main(void) {
         close_console(shtctl->sheets0 + (data - 768));
       } else if (1024 <= data && data <= 2023) {
         close_cons_task(taskctl->tasks0 + (data - 1024));
+      }  else if (2024 <= data && data <= 2279) {
+        struct Sheet *sht_tmp = shtctl->sheets0 + (data - 2024);
+        memman_free_4k(memman, (int) sht_tmp->buf, 256 * 165);
+        sheet_free(sht_tmp);
       }
     }
   }

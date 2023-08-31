@@ -10,6 +10,7 @@
 
 int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int eax) {
   struct Task *task = task_now();
+  struct FIFO32 *sys_fifo = (struct FIFO32 *)*((int *) 0x0fec);
   int ds_base = task->ds_base;   // code segement address
   struct Console *cons = task->cons;
   struct Shtctl *shtctl = (struct Shtctl *)*((int *) 0x0fe4);
@@ -121,6 +122,13 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
         }
         if (data == 3) {  /*光标OFF */
           cons->cur_c = -1;
+        }
+        if (data == 4) {  /*只关闭命令行窗口*/
+          timer_cancel(cons->timer);
+          io_cli();
+          fifo32_put(sys_fifo, cons->sheet - shtctl->sheets0 + 2024); /*2024~2279*/
+          cons->sheet = NULL;
+          io_sti();
         }
         if (256 <= data) { /*键盘数据(通过任务A)*/
           reg[7] = data - 256;
