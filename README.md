@@ -135,7 +135,7 @@ because the range of values that can be stored in a char is -128 to 127 for a **
 - [X] day 25: Muti console windows
 - [X] day 26: Speed up the operations of windows
 - [ ] day 27: LDT and library（未按书上处理）
-- [ ] 第28天: 文件操作与文字显示（不包含日文显示部分）
+- [ ] day 28: 文件操作与文字显示（不包含日文显示部分）
 
 ## Welcome to ask questions
 In the process of implementation, I also encountered a lot of trouble (eg. compile error). <br>
