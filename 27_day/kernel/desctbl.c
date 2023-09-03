@@ -29,8 +29,7 @@ void init_gdtidt(void) {
     set_gatedesc(idt + 0x40, (int) asm_hrb_api,       2 * 8, AR_INTGATE32 + 0x60);  // 可供应用程序作为API来调用的中断
 }
 
-void set_segmdesc(struct SegmentDescriptor *sd, unsigned int limit, int base,
-                  int ar) {
+void set_segmdesc(struct SegmentDescriptor *sd, unsigned int limit, int base, int ar) {
     if (limit > 0xfffff) {
         ar |= 0x8000; // G_bit = 1
         limit /= 0x1000;

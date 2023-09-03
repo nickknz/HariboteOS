@@ -4,6 +4,7 @@
 #include "timer.h"
 #include "memory.h"
 #include "fifo.h"
+#include "desctbl.h"
 
 #define MAX_TASKS 1000 // 最大任务数量
 #define TASK_GDT0 3    // 定义从GDT的几号开始分配给TSS
@@ -32,6 +33,7 @@ struct Task {
   int level, priority;
   struct FIFO32 fifo;
   struct TSS32 tss;
+  struct SegmentDescriptor ldt[2];
   struct Console *cons;
   int ds_base, cons_stack;
 };
