@@ -38,7 +38,7 @@ APPS	:= app/a.hrb app/hello.hrb app/hello2.hrb app/hello3.hrb app/crack1.hrb app
 			app/winhello.hrb app/winhelo2.hrb app/winhelo3.hrb \
 			app/star1.hrb app/stars.hrb app/stars2.hrb app/lines.hrb app/walk.hrb app/noodle.hrb \
 			app/beepdown.hrb app/beepup.hrb app/color.hrb app/color2.hrb \
-			# app/carck7.hrb
+			app/sosu.hrb app/sosu2.hrb app/sosu3.hrb
 
 SYS		:= haribote.sys
 IMG		:= haribote.img
@@ -104,6 +104,15 @@ app/color2.hrb: app/api.lib
 # app/carck7.hrb: app/api.o
 # 	$(CC) -Wall -Wno-format -Wno-unused -std=gnu99 -m32 -c app/carck7.c -o app/carck7.o
 # 	$(LD) -m elf_i386 --oformat elf32-i386 -e main -pie app/carck7.o app/api.o -o app/carck7.hrb
+
+app/sosu.hrb: app/sosu.o app/api.lib libc/stdio/stdio.bin
+	$(LD) -m elf_i386 --oformat elf32-i386 -e main -pie $^ -o $@
+
+app/sosu2.hrb: app/sosu2.o app/api.lib libc/stdio/stdio.bin
+	$(LD) -m elf_i386 --oformat elf32-i386 -e main -pie $^ -o $@
+
+app/sosu3.hrb: app/sosu3.o app/api.lib libc/stdio/stdio.bin
+	$(LD) -m elf_i386 --oformat elf32-i386 -e main -pie $^ -o $@
 
 # Kernel
 kernel/kernel.sys: ${K_OBJS} ${L_OBJS}
