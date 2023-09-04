@@ -8,6 +8,10 @@
   GLOBAL api_get_key
   GLOBAL api_alloc_timer, api_init_timer, api_set_timer, api_free_timer
   GLOBAL api_beep
+
+
+  GLOBAL __alloca
+
 api_putchar:
   MOV   EDX, 1
   MOV   AL, [ESP+4]
@@ -211,3 +215,8 @@ api_beep:               ; void api_beep(int tone);
   MOV     EAX, [ESP+4]  ; tone
   INT     0x40
   RET
+
+__alloca:               ; 修改后添加无效
+  ADD     EAX, -4
+  SUB     ESP, EAX
+  JMP     DWORD [ESP+EAX] ; 代替RET
