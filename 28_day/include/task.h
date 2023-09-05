@@ -5,6 +5,7 @@
 #include "memory.h"
 #include "fifo.h"
 #include "desctbl.h"
+#include "fs.h"
 
 #define MAX_TASKS 1000 // 最大任务数量
 #define TASK_GDT0 3    // 定义从GDT的几号开始分配给TSS
@@ -36,6 +37,9 @@ struct Task {
   struct SegmentDescriptor ldt[2];
   struct Console *cons;
   int ds_base, cons_stack;
+  struct FileHandle *fHandle;
+  int *fat;
+  char *cmdline;
 };
 
 struct TaskLevel {

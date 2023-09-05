@@ -220,6 +220,14 @@ int cmd_app(struct Console *cons, int *fat, char *cmdline) {
                     sheet_free(sht);
                 }
             }
+
+            for (int i = 0; i < 8; i++) {   /*将未关闭的文件关闭*/
+                if (task->fHandle[i].buf != NULL) {
+                    memman_free_4k(memman, (int)task->fHandle[i].buf, task->fHandle[i].size);
+                    task->fHandle[i].buf = NULL;
+                }
+            }
+
             timer_cancel_all(&task->fifo);
             memman_free_4k(memman, (int)q, 64 * 1024);
         } else {

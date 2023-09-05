@@ -25,6 +25,8 @@ void console_task(struct Sheet *sheet, unsigned int memtotal)
 	int i, *fat = (int *)memman_alloc_4k(memman, 4 * 2880);
 	struct Console cons;
 	char s[30], cmdline[30];
+	struct FileHandle fHandle[8];
+
 	cons.sheet = sheet;
 	cons.cur_x = 8;
 	cons.cur_y = 28;
@@ -42,6 +44,12 @@ void console_task(struct Sheet *sheet, unsigned int memtotal)
 	}
 
 	file_read_fat(fat, (unsigned char *)(ADR_DISKIMG + 0x000200));
+
+	for (int i = 0; i < 8; i++) {
+		fHandle[i].buf = NULL;
+	}
+	task->fHandle = fHandle;
+	task->fat = fat;
 
 	/*显示提示符prompt*/
 	put_fonts8_asc_sht(sheet, 8, 28, COL8_FFFFFF, COL8_000000, ">", 1);  
