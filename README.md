@@ -4,7 +4,7 @@ This project aims for learning Operating System using the book《30天自制操�
 ## Project features
 - Uses GCC and NASM as the toolchain, allowing cross-platform use
 - Builds the kernel based on LinkerScript
-- Support several command lines (mem, clear, ls, cat)
+- Support several command lines (mem, clear, ls, cat, start, ncst, exit)
 - Does not rely on the author's custom HRB file format and supports the ELF file format
 - Implements simple versions of some C standard library functions (libc file)
 - Header files are split, making the structure clearer
