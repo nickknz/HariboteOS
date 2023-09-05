@@ -263,11 +263,11 @@ api_fread:              ; int api_fread(char *buf, int maxsize, int fhandle);
   POP     EBX
   RET
 
-; api_cmdline:            ; int api_cmdline(char *buf, int maxsize);
-;   PUSH    EBX
-;   MOV     EDX, 26
-;   MOV     ECX, [ESP+12]
-;   MOV     EBX, [ESP+8]
-;   INT     0x40
-;   POP     EBX
-;   RET
+api_cmdline:            ; int api_cmdline(char *buf, int maxsize);
+  PUSH    EBX
+  MOV     EDX, 26
+  MOV     ECX, [ESP+12] ; maxsize
+  MOV     EBX, [ESP+8]  ; buf
+  INT     0x40
+  POP     EBX
+  RET

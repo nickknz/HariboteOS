@@ -183,7 +183,6 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
       if (i < 8) {
         finfo = file_search((char *)(ebx + ds_base), (struct FileInfo *)(ADR_DISKIMG + 0x002600), 224);
         if (finfo != 0) {
-          cons_putchar(cons, 'e' & 0xff, 1);
           reg[7] = (int) fh;
           fh->buf = (char *)memman_alloc_4k(memman, finfo->size);
           fh->size = finfo->size;
@@ -235,23 +234,23 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
       }
       reg[7] = i;
       break;
-    // case 26:
-    //   i = 0;
-    //   for (;;) {
-    //     *((char *)(ebx + ds_base) + i) = task->cmdline[i];
-    //     if (task->cmdline[i] == '\0') {
-    //       break;
-    //     }
+    case 26:
+      i = 0;
+      for (;;) {
+        *((char *)(ebx + ds_base) + i) = task->cmdline[i];
+        if (task->cmdline[i] == '\0') {
+          break;
+        }
 
-    //     if (i >= ecx) {
-    //       break;
-    //     }
+        if (i >= ecx) {
+          break;
+        }
 
-    //     i++;
-    //   }
+        i++;
+      }
 
-    //   reg[7] = i;
-    //   break;
+      reg[7] = i;
+      break;
     default:
       break;
   }

@@ -38,7 +38,7 @@ APPS	:= app/a.hrb app/hello.hrb app/hello2.hrb app/hello3.hrb app/crack1.hrb app
 			app/winhello.hrb app/winhelo2.hrb app/winhelo3.hrb \
 			app/star1.hrb app/stars.hrb app/stars2.hrb app/lines.hrb app/walk.hrb app/noodle.hrb \
 			app/beepdown.hrb app/beepup.hrb app/color.hrb app/color2.hrb \
-			app/sosu.hrb app/sosu2.hrb app/sosu3.hrb app/typeipl.hrb
+			app/sosu.hrb app/sosu2.hrb app/sosu3.hrb app/typeipl.hrb app/type.hrb
 
 SYS		:= haribote.sys
 IMG		:= haribote.img
