@@ -8,24 +8,23 @@ This project aims for learning Operating System using the book《30天自制操�
 - Does not rely on the author's custom HRB file format and supports the ELF file format
 - Implements simple versions of some C standard library functions (libc file)
 - Header files are split, making the structure clearer
-- Supports Chinese keyboard input.
 
 ## The final folder structure
-- app: The application source code
-- include: The header file of kernel
-- kernel: The OS kernel source code
-- libc: The simple C library code
+- `app`: The application source code
+- `include`: The header file of kernel
+- `kernel`: The OS kernel source code
+- `libc`: The simple C library code
 
-## The functions of simple C library was implemented
+## Implementation of C standard library
 Source from: [link](https://github.com/ghosind/HariboteOS)
-- sprintf
-- vsprintf
-- rand
-- strcmp
-- strncmp
+- `sprintf`
+- `vsprintf`
+- `rand`
+- `strcmp`
+- `strncmp`
 
 From ChatGPT:
-- trim
+- `trim`
 
 ## The flow to boot HariboteOS
 1. Start BIOS.
@@ -82,8 +81,6 @@ To debug using GDB, please set DEBUG:
 $ make qemu DEBUG=1
 ```
 
-## Implementation of C standard library
-
 ## Important Concepts
 - IDT (Global degment Descriptor Table): A data structure used by managing memory segmentation. It contains a list of segment descriptors, each of which describes a segment of memory, including its base address, size, access permissions, and other attributes. This is the simple version of initialize GDT.
 ``` c
@@ -123,7 +120,9 @@ because the range of values that can be stored in a char is -128 to 127 for a **
 
 ## The bug have not fixed
 1. In day 15, when we are using counter to test task switching (15.5 in textbook), the screen processing will be extremely slow if we are using io_sti instead of io_stihlt.
-2. In day 25, there will be some messy graph in the top of screen when we run the second app. I guess there is something wrong when we set the second GDT for second app in cmd_app function.
+2. In day 25, there will be some messy graph in the top of screen when we run the second app. I guess there is something wrong when we set the second GDT for the second app in cmd_app function. It was currently fixed by deleting memman_free(memman, 0x00010000, 0x0009e000); in bootpack.c
+
+   
 ## Project progress
 - [X] day 1: Hello world
 - [X] day 2: assembly and Makefile
@@ -152,7 +151,7 @@ because the range of values that can be stored in a char is -128 to 127 for a **
 - [X] day 25: Muti console windows
 - [X] day 26: Speed up the operations of windows
 - [X] day 27: LDT and library
-- [ ] day 28: 文件操作与文字显示（不包含日文显示部分）
+- [X] day 28: File System API
 
 ## Welcome to ask questions
 In the process of implementation, I also encountered a lot of trouble (eg. compile error). <br>
