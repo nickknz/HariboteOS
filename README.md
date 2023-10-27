@@ -1,4 +1,4 @@
-# 《30天自制操作系统》学习笔记
+# 《Make OS Within 30 Days》Study Notes
 This project aims for learning Operating System using the book《30天自制操作系统》. Because the author uses a set of non-standard tools written by himself and can only run under Windows platform, I am planning to implement this project uses NASM, GCC, Qemu and other tools (on Mac Intel/M2) to compile and run on the basis of the original code.
 
 ## Project features
